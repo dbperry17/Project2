@@ -5,7 +5,7 @@ DEP = .deps
 CC  = gcc
 CXX = g++
 CFLAGS   = -Wall 
-CXXFLAGS = -Wall 
+CXXFLAGS = -Wall -std=c++11
 
 # Target
 SOURCES  = lexer.cc project2.cc inputbuf.cc
@@ -49,4 +49,5 @@ zip: $(SOURCES)
 clean:
 	@rm -f $(TARGET) $(DEPFILES) $(OBJECTS) $(ZIP_FILE)
 	@rmdir $(DEP)
+
 

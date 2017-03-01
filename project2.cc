@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <vector>
 #include "lexer.h"
 #include "inputbuf.h"
 
@@ -9,6 +10,7 @@ using namespace std;
 
 int main (int argc, char* argv[])
 {
+    cout << "\nSTARTING PROGRAM" << endl;
     int task;
 
     if (argc < 2)
@@ -16,6 +18,7 @@ int main (int argc, char* argv[])
         cout << "Error: missing argument\n";
         return 1;
     }
+
 
     /*
        Note that by convention argv[0] is the name of your executable,
@@ -25,70 +28,207 @@ int main (int argc, char* argv[])
     task = atoi(argv[1]);
 
     // TODO: Read the input grammar at this point from standard input
+    int loopBreak = 0; //to prevent infinite loops while testing
+    const int loopMax = 10; //In case I need to change loop iterations
     LexicalAnalyzer lexer;
     Token token;
+    vector<Token> terms;
+    vector<Token> nonTerms;
+    vector< vector<Token> > ruleList;
+    vector< vector<Token> > RHS_List;
+    //Iterating through vectors
+    vector<Token>::iterator iter;
+    vector<Token>::iterator iterNest;
+    vector< vector<Token> >::iterator vecTokIter;
 
-    token = lexer.GetToken();
-    token.Print();
-    while (token.token_type != DOUBLEHASH)
+    //TESTING
+    int ruleCount = 0;
+    string termStr = "Terminals = {";
+    string nonTermStr = "Non-Terminals = {";
+    string singRuleStr = "";
+    vector<string> ruleStr;
+    ruleStr.push_back("RULES:");
+    vector<string>::iterator ruleStrIter;
+
+    //Get terminals
+    //cout << "Getting terminals" << endl;
+
+    token = lexer.GetToken(); //To initiate while loop
+
+    while ((token.token_type != HASH))// && (loopBreak < loopMax))
     {
+        loopBreak++; //For testing
+
+        terms.push_back(token);
+        termStr += token.lexeme;
+        termStr += ", ";
+
         token = lexer.GetToken();
-        token.Print();
+        //cout << "loopBreak = " << loopBreak << endl;
+    }
+    token = lexer.GetToken(); //To get past hash
+
+    termStr.pop_back(); //delete space
+    termStr.pop_back(); //delete comma
+    termStr += "}";
+
+    //TESTING
+    if((loopBreak == loopMax))// && (token.token_type != HASH))
+        cout << "Loop manually broken for //Get terminals" << endl;
+    loopBreak = 0; //for testing
+
+
+    //cout << "Getting non-terminals" << endl;
+    //Get non-terminals
+    while ((token.token_type != HASH))// && (loopBreak < loopMax))
+    {
+        loopBreak++; //For testing
+
+        nonTerms.push_back(token);
+
+        nonTermStr += token.lexeme;
+        nonTermStr += ", ";
+
+        token = lexer.GetToken();
+        //cout << "loopBreak = " << loopBreak << endl;
+    }
+    nonTermStr.pop_back(); //delete space
+    nonTermStr.pop_back(); //delete comma
+    nonTermStr += "}";
+
+    //TESTING
+    if((loopBreak == loopMax) && (token.token_type != HASH))
+        cout << "Loop manually broken for //Get non-terminals" << endl;
+    loopBreak = 0; //for testing
+
+    //Get rules
+    //cout << "Getting rules" << endl;
+    while ((token.token_type != DOUBLEHASH) && (loopBreak < loopMax))
+    {
+        //TESTING
+        //cout << "loopBreak = " << loopBreak << endl;
+        int nestLoop = 0; //for testing; loopBreak for nested loop
+        loopBreak++; //For testing
+        singRuleStr = "";
+        string RHS_string = "";
+
+        vector<Token> singleRule;
+        vector<Token> singRHS;
+        bool pastArrow = false;
+
+        //Get each rule
+        token = lexer.GetToken(); //To get past hash
+        //cout << "Getting a rule" << endl;
+        while ((token.token_type != HASH) && (token.token_type != DOUBLEHASH) && (nestLoop < loopMax))
+        {
+            nestLoop++; //For testing
+
+            singleRule.push_back(token);
+
+            if(pastArrow)
+            {
+                singRHS.push_back(token);
+                RHS_string += token.lexeme;
+            }
+
+            if(token.token_type == ARROW)
+            {
+                singRuleStr += "->";
+                pastArrow = true;
+            }
+            else
+                singRuleStr += token.lexeme;
+
+            singRuleStr += " ";
+
+            token = lexer.GetToken();
+            //cout << "nestLoop = " << nestLoop << endl;
+        }
+
+        if(token.token_type != DOUBLEHASH)
+        {
+            if(!RHS_string.compare(""))
+                singRuleStr += "ε";
+
+            ruleCount++;
+            ruleStr.push_back(singRuleStr);
+
+            ruleList.push_back(singleRule);
+            RHS_List.push_back(singRHS);
+        }
+        //else
+        //    cout << "Rule not gotten; end of file" << endl;
+
+        //TESTING
+        if((nestLoop == loopMax) && (token.token_type != HASH))
+            cout << "Loop manually broken for //Get each rule" << endl;
+
+        //cout << "loopBreak = " << loopBreak << endl;
     }
 
-    cout << "test" << endl;
+    //TESTING
+    /*
+    if((loopBreak == loopMax) && (token.token_type != DOUBLEHASH))
+        cout << "Loop manually broken for //Get Rules" << endl;
+    else if(loopBreak == loopMax)
+        cout << "Weird error" << endl;
+    else if(loopBreak == 0)
+        cout << "Rule loop never entered" << endl;
+    else
+        cout << "Rules successfully gotten" << endl;
+    */
+    loopBreak = 0;
 
-    //310 STUFF BELOW
-/*	int k = 0;	//n = 2^k blocks to be allocated
-	int t = 0;	//size of hash table
-	int c = 0;	//number of commands
-	string temp;
+    //TESTING
+    /*
+    cout << "\n\nTERMINALS:" << endl;
+    for(iter = terms.begin(); iter != terms.end(); ++iter)
+    {
+        iter->Print();
+    }
 
-	//Creating a block of memory
-	getline(cin, temp, '\n');
-	k = stoi(temp);
-	int n = pow(2, k);
-	char* memBlock = new char[n];
-	for(int i = 0; i < n; i++)
-		memBlock[i] = BLANK;
+    cout << "\n\nNON-TERMINALS:" << endl;
+    for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
+    {
+        iter->Print();
+    }
 
-	//creating heap
-	heapEntry* myHeap = new heapEntry[n+1];
-	for(int i = 0; i < n; i++)
-	{
-		myHeap[i].blockSize = 0;
-		myHeap[i].offset = -1;
-	}
-	myHeap[1].blockSize = n;
-	myHeap[1].offset = 0;
-	int num = 1;
-	int* heapSize = &num;
+    cout << "\n\nTotal rules: " << ruleCount << endl;
+    cout << "RULES:" << endl;
+    int tempRuleCount = 1;
+    for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+    {
+        cout << "\nRule #" << tempRuleCount << ":" << endl;
+        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+            iter->Print();
+        tempRuleCount++;
+    }
 
-	//Creating a Symbol Table
-	getline(cin, temp, '\n');
-	t = stoi(temp);
-	symbolTableEntry* syms = new symbolTableEntry[t];
-	for(int i = 0; i < t; i++)
-	{
-		syms[i].type = EMPTY;
-		syms[i].noBytes = 1;
-		syms[i].symbol[0] = BLANK;
-		syms[i].symbol[1] = STRTERM;
-	}
+    cout << "\nRHS:" << endl;
+    for(vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
+    {
+        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+            iter->Print();
+    }
+    */
 
-	getline(cin, temp, '\n');
-	c = stoi(temp);
+    /*
+    cout << "\nGRAMMAR:" << endl;
+    cout << termStr << endl;
+    cout << nonTermStr << "\n" << endl;
 
+    for(ruleStrIter = ruleStr.begin(); ruleStrIter != ruleStr.end(); ++ruleStrIter)
+    {
+        cout << *ruleStrIter << endl;
+    }
+    */
 
-
-	parseInstructions(n, c, t, memBlock, syms,myHeap,heapSize);
-
-	delete(myHeap);
-	delete(memBlock);
-	delete(syms);
-
-	fflush(stdin);
-*/	//310 STUFF ABOVE
+    cout << "\nRHS:" << endl;
+    for(vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
+    {
+        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+            iter->Print();
+    }
 
     /*
        Hint: You can modify and use the lexer from previous project
@@ -103,6 +243,15 @@ int main (int argc, char* argv[])
     switch (task) {
         case 1:
             // TODO: perform task 1.
+
+            //For terminals
+            for(iter = terms.begin(); iter != terms.end(); ++iter)
+            {
+
+            }
+
+
+            cout << "\nTask 1 Complete" << endl;
             break;
 
         case 2:
