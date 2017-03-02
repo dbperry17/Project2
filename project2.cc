@@ -4,13 +4,12 @@
 
 #include <vector>
 #include "lexer.h"
-#include "inputbuf.h"
 
 using namespace std;
 
 int main (int argc, char* argv[])
 {
-    cout << "\nSTARTING PROGRAM" << endl;
+    //cout << "\nSTARTING PROGRAM" << endl;
     int task;
 
     if (argc < 2)
@@ -36,6 +35,7 @@ int main (int argc, char* argv[])
     vector<Token> nonTerms;
     vector< vector<Token> > ruleList;
     vector< vector<Token> > RHS_List;
+    vector< vector<Token> > LHS_List;
     //Iterating through vectors
     vector<Token>::iterator iter;
     vector<Token>::iterator iterNest;
@@ -50,9 +50,13 @@ int main (int argc, char* argv[])
     ruleStr.push_back("RULES:");
     vector<string>::iterator ruleStrIter;
 
+
+    /******************************************
+     * Task 0: Reading and categorizing input *
+     ******************************************/
+
     //Get terminals
     //cout << "Getting terminals" << endl;
-
     token = lexer.GetToken(); //To initiate while loop
 
     while ((token.token_type != HASH))// && (loopBreak < loopMax))
@@ -103,7 +107,7 @@ int main (int argc, char* argv[])
 
     //Get rules
     //cout << "Getting rules" << endl;
-    while ((token.token_type != DOUBLEHASH) && (loopBreak < loopMax))
+    while ((token.token_type != DOUBLEHASH))// && (loopBreak < loopMax))
     {
         //TESTING
         //cout << "loopBreak = " << loopBreak << endl;
@@ -114,12 +118,13 @@ int main (int argc, char* argv[])
 
         vector<Token> singleRule;
         vector<Token> singRHS;
+        vector<Token> singLHS;
         bool pastArrow = false;
 
         //Get each rule
         token = lexer.GetToken(); //To get past hash
         //cout << "Getting a rule" << endl;
-        while ((token.token_type != HASH) && (token.token_type != DOUBLEHASH) && (nestLoop < loopMax))
+        while ((token.token_type != HASH) && (token.token_type != DOUBLEHASH))// && (nestLoop < loopMax))
         {
             nestLoop++; //For testing
 
@@ -130,6 +135,8 @@ int main (int argc, char* argv[])
                 singRHS.push_back(token);
                 RHS_string += token.lexeme;
             }
+            else if((!pastArrow) && (token.token_type != ARROW))
+                singLHS.push_back(token);
 
             if(token.token_type == ARROW)
             {
@@ -155,6 +162,7 @@ int main (int argc, char* argv[])
 
             ruleList.push_back(singleRule);
             RHS_List.push_back(singRHS);
+            LHS_List.push_back(singLHS);
         }
         //else
         //    cout << "Rule not gotten; end of file" << endl;
@@ -166,7 +174,11 @@ int main (int argc, char* argv[])
         //cout << "loopBreak = " << loopBreak << endl;
     }
 
-    //TESTING
+    /******************************************
+     *                TESTING                 *
+     * Task 0: Reading and categorizing input *
+     ******************************************/
+
     /*
     if((loopBreak == loopMax) && (token.token_type != DOUBLEHASH))
         cout << "Loop manually broken for //Get Rules" << endl;
@@ -210,9 +222,11 @@ int main (int argc, char* argv[])
         for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
             iter->Print();
     }
-    */
+     */
 
-    /*
+
+
+/*
     cout << "\nGRAMMAR:" << endl;
     cout << termStr << endl;
     cout << nonTermStr << "\n" << endl;
@@ -221,14 +235,22 @@ int main (int argc, char* argv[])
     {
         cout << *ruleStrIter << endl;
     }
-    */
+*/
+/*
+    cout << "\nLHS:" << endl;
+    for(vecTokIter = LHS_List.begin(); vecTokIter != LHS_List.end(); ++vecTokIter)
+    {
+        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+            cout << iter->lexeme << endl;
+    }
 
     cout << "\nRHS:" << endl;
     for(vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
     {
         for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
-            iter->Print();
+            cout << iter->lexeme << endl;
     }
+*/
 
     /*
        Hint: You can modify and use the lexer from previous project
@@ -240,34 +262,92 @@ int main (int argc, char* argv[])
        use the lexer.
      */
 
+    //Variables declared for switch cases:
+    //Case 1
+    int useCount = 0;
+    //Case 2
+    //Case 3
+    //Case 4
+    //Case 5
+
     switch (task) {
         case 1:
-            // TODO: perform task 1.
+            //cout << "\nStarting Task 1" << endl;
 
             //For terminals
             for(iter = terms.begin(); iter != terms.end(); ++iter)
             {
+                //cout << "enter loop" << endl;
 
+                for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+                {
+                    for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+                    {
+                        //cout << "inside loop" << endl;
+                        if(iterNest->lexeme == iter->lexeme)
+                        {
+                            useCount++;
+                            //cout << "force loop-end test; next should be outside loop" << endl;
+                            //counting # of rules it appears in, not # of times it appears
+                            //exit loop in case same rule uses it twice
+                            break;
+                        }
+                    }
+                    //cout << "outside loop" << endl;
+                }
+
+                cout << iter->lexeme << ": " << useCount << endl;
+                useCount = 0;
+            }
+
+            useCount = 0;
+
+            //For non-terminals
+            for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
+            {
+                for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+                {
+                    for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+                    {
+                        if(iterNest->lexeme == iter->lexeme)
+                        {
+                            useCount++;
+                            break;
+                        }
+                    }
+                }
+
+                cout << iter->lexeme << ": " << useCount << endl;
+                useCount = 0;
             }
 
 
-            cout << "\nTask 1 Complete" << endl;
+            //cout << "\nTask 1 Complete" << endl;
             break;
-
         case 2:
             // TODO: perform task 2.
+            cout << "\nStarting Task 2" << endl;
+
+
+            cout << "\nTask 2 Complete" << endl;
             break;
 
         case 3:
             // TODO: perform task 3.
+            cout << "\nStarting Task 3" << endl;
+            cout << "\nTask 3 Complete" << endl;
             break;
 
         case 4:
             // TODO: perform task 4.
+            cout << "\nStarting Task 4" << endl;
+            cout << "\nTask 4 Complete" << endl;
             break;
 
         case 5:
             // TODO: perform task 5.
+            cout << "\nStarting Task 5" << endl;
+            cout << "\nTask 5 Complete" << endl;
             break;
 
         default:
