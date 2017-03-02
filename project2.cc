@@ -7,6 +7,25 @@
 
 using namespace std;
 
+//From powerpoint
+bool is_element(vector<bool> set, int i)
+{
+    if((i >= 0) && (i < set.size() - 1))
+        return set.at(i);
+    else
+        return false;
+}
+
+//From powerpoint
+
+/*****
+ *
+ * Idea: Put an array inside vector? array position 0 = token, position 1 = boolean?
+ */
+
+///bool print_set(vector)
+
+
 int main (int argc, char* argv[])
 {
     //cout << "\nSTARTING PROGRAM" << endl;
@@ -266,6 +285,7 @@ int main (int argc, char* argv[])
     //Case 1
     int useCount = 0;
     //Case 2
+
     //Case 3
     //Case 4
     //Case 5
