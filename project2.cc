@@ -2,33 +2,158 @@
 #include <cstdio>
 #include <cstdlib>
 
+//Things I'm including
 #include <vector>
 #include "lexer.h"
 
 using namespace std;
 
+/****************
+ * My variables *
+ ****************/
+//testing variables
+int loopBreak = 0; //to prevent infinite loops while testing
+const int loopMax = 10; //In case I need to change loop iterations
+bool testing = true; //to avoid having to comment things out
+bool testInput = false;
+bool testRules = true;
+bool test0 = false;
+bool test1 = true;
+bool test2 = true;
+bool test3 = true;
+bool test4 = true;
+bool test5 = true;
+bool testElement = false;
+bool testPrint = false;
+bool testUseless = true;
+
+
+
+//non-testing variables
+vector<string> universe;
+vector<string> universeFF; //FIRST & FOLLOW universe
+vector<string>::iterator strIter;
+
 //From powerpoint
-bool is_element(vector<bool> set, int i)
+bool is_element(vector<bool> S, int i)
 {
-    if((i >= 0) && (i < set.size() - 1))
-        return set.at(i);
+    if(testElement)
+        cout << "checking elements" << endl;
+    int max = (int)S.size();
+    if((i >= 0) && (i < max))
+    {
+        if (testElement)
+        {
+            cout << "S.size() = " << S.size() << endl;
+            cout << "S[" << i << "] = " << S[i] << endl;
+        }
+        return S[i];
+    }
     else
+    {
+        if(testElement)
+            cout << "element out of range" << endl;
         return false;
+    }
 }
 
 //From powerpoint
+//Powerpoint has this as a bool but doesn't return true or false?
+void print_set(vector<bool> S)
+{
+    if(testPrint)
+        cout << "printing" << endl;
+    int max = (int)S.size();
+    for(int i = 0; i < max; i++)
+        if(is_element(S, i))
+        {
+            cout << universe.at(i);
+            if(i != max - 1)
+                cout << ", ";
+            else
+                cout << "" << endl;
+        }
+    if(testPrint)
+        cout << "done printing" << endl;
+}
 
-/*****
+/*
+ * Pseudocode:
  *
- * Idea: Put an array inside vector? array position 0 = token, position 1 = boolean?
+ * find intersection of universe and universeFF
+ * universe[0] = true
+ * universe[2] through (end of universeFF) = true
+ * //after universeFF are variables
+ * //universe[1] = eof, cannot generate anything
+ *
+ * for each variable in LHS
+ *      bool generating = true
+ *      for each token in RHS
+ *          if token is NOT generating
+ *              generating = false
+ *      universe[variable] = generating
  */
 
-///bool print_set(vector)
+vector<bool> find_useless()
+{
+    vector<bool> genU(universe.size()); //generating for entire universe
+    int max = genU.size() - 1;
+    if(testUseless)
+    {
+        cout << "universe size = " << universe.size() << endl;
+        cout << "genU size = " << genU.size() << endl;
+        cout << "Printing Universe" << endl;
+        vector<bool> testVector(max + 1);
+        fill(testVector.begin(),testVector.end(),true);
+        //for(int i = 0; i < max; i++)
+          //  cout << "testVector[" << i << "] = " << testVector[i] << endl;
+        print_set(testVector);
+        cout << "done printing universe" << endl;
+    }
 
+    /*
+    for(int i = 0, loopBreak = 0; ((i < max) && (loopBreak < loopMax)) || ((i < max) && (!testUseless)); i++, loopBreak++)
+    {
+        cout << "loop #" << loopBreak << endl;
+        if(is_element(genU, i))
+        {
+
+            genU[i] = true;
+        }
+    }
+    if(loopBreak == loopMax)
+        cout << "loop forcibly broken" << endl;
+    loopBreak = 0;
+
+    print_set(genU);
+    */
+
+    return genU;
+}
+
+/*****************
+ * MAIN FUNCTION *
+ *****************/
 
 int main (int argc, char* argv[])
 {
-    //cout << "\nSTARTING PROGRAM" << endl;
+    if(testing)
+        cout << "\nSTARTING PROGRAM" << endl;
+    else
+    {
+        //so that I don't have to change them all individually when I'm completely done with testing
+        testInput = false;
+        test0 = false;
+        test1 = false;
+        test2 = false;
+        test3 = false;
+        test4 = false;
+        test5 = false;
+        testElement = false;
+        testPrint = false;
+        testUseless = false;
+    }
+
     int task;
 
     if (argc < 2)
@@ -46,8 +171,6 @@ int main (int argc, char* argv[])
     task = atoi(argv[1]);
 
     // TODO: Read the input grammar at this point from standard input
-    int loopBreak = 0; //to prevent infinite loops while testing
-    const int loopMax = 10; //In case I need to change loop iterations
     LexicalAnalyzer lexer;
     Token token;
     vector<Token> terms;
@@ -74,17 +197,30 @@ int main (int argc, char* argv[])
      * Task 0: Reading and categorizing input *
      ******************************************/
 
+
     //Get terminals
-    //cout << "Getting terminals" << endl;
+    if(testInput)
+        cout << "Starting Task 0" << endl;
+
     token = lexer.GetToken(); //To initiate while loop
 
-    while ((token.token_type != HASH))// && (loopBreak < loopMax))
+    universe.push_back("#");
+    universe.push_back("$");
+    universeFF.push_back("#");
+    universeFF.push_back("$");
+
+    if(testInput)
+        cout << "Getting terminals" << endl;
+    while (((token.token_type != HASH) && (loopBreak < loopMax)) || ((token.token_type != HASH) && (!testInput)))
     {
         loopBreak++; //For testing
 
         terms.push_back(token);
         termStr += token.lexeme;
         termStr += ", ";
+
+        universe.push_back(token.lexeme);
+        universeFF.push_back(token.lexeme);
 
         token = lexer.GetToken();
         //cout << "loopBreak = " << loopBreak << endl;
@@ -96,14 +232,16 @@ int main (int argc, char* argv[])
     termStr += "}";
 
     //TESTING
-    if((loopBreak == loopMax))// && (token.token_type != HASH))
-        cout << "Loop manually broken for //Get terminals" << endl;
+    if(testInput)
+        if((loopBreak == loopMax))// && (token.token_type != HASH))
+            cout << "Loop manually broken for //Get terminals" << endl;
     loopBreak = 0; //for testing
 
 
-    //cout << "Getting non-terminals" << endl;
+    if(testInput)
+        cout << "Getting non-terminals" << endl;
     //Get non-terminals
-    while ((token.token_type != HASH))// && (loopBreak < loopMax))
+    while (((token.token_type != HASH) && (loopBreak < loopMax)) || ((token.token_type != HASH) && (!testInput)))
     {
         loopBreak++; //For testing
 
@@ -111,6 +249,8 @@ int main (int argc, char* argv[])
 
         nonTermStr += token.lexeme;
         nonTermStr += ", ";
+
+        universe.push_back(token.lexeme);
 
         token = lexer.GetToken();
         //cout << "loopBreak = " << loopBreak << endl;
@@ -120,13 +260,15 @@ int main (int argc, char* argv[])
     nonTermStr += "}";
 
     //TESTING
-    if((loopBreak == loopMax) && (token.token_type != HASH))
-        cout << "Loop manually broken for //Get non-terminals" << endl;
+    if(testInput)
+        if((loopBreak == loopMax) && (token.token_type != HASH))
+            cout << "Loop manually broken for //Get non-terminals" << endl;
     loopBreak = 0; //for testing
 
     //Get rules
-    //cout << "Getting rules" << endl;
-    while ((token.token_type != DOUBLEHASH))// && (loopBreak < loopMax))
+    if(testInput)
+        cout << "Getting rules" << endl;
+    while (((token.token_type != DOUBLEHASH) && (loopBreak < loopMax)) || ((token.token_type != DOUBLEHASH) && (!testInput)))
     {
         //TESTING
         //cout << "loopBreak = " << loopBreak << endl;
@@ -142,22 +284,24 @@ int main (int argc, char* argv[])
 
         //Get each rule
         token = lexer.GetToken(); //To get past hash
-        //cout << "Getting a rule" << endl;
-        while ((token.token_type != HASH) && (token.token_type != DOUBLEHASH))// && (nestLoop < loopMax))
+        if (testInput)
+            cout << "Getting a rule" << endl;
+        while ((((token.token_type != HASH) && (token.token_type != DOUBLEHASH)) && (loopBreak < loopMax))
+               || (((token.token_type != HASH) && token.token_type != DOUBLEHASH) && (!testInput)))
         {
             nestLoop++; //For testing
 
             singleRule.push_back(token);
 
-            if(pastArrow)
+            if (pastArrow)
             {
                 singRHS.push_back(token);
                 RHS_string += token.lexeme;
             }
-            else if((!pastArrow) && (token.token_type != ARROW))
+            else if ((!pastArrow) && (token.token_type != ARROW))
                 singLHS.push_back(token);
 
-            if(token.token_type == ARROW)
+            if (token.token_type == ARROW)
             {
                 singRuleStr += "->";
                 pastArrow = true;
@@ -171,9 +315,9 @@ int main (int argc, char* argv[])
             //cout << "nestLoop = " << nestLoop << endl;
         }
 
-        if(token.token_type != DOUBLEHASH)
+        if (token.token_type != DOUBLEHASH)
         {
-            if(!RHS_string.compare(""))
+            if (!RHS_string.compare(""))
                 singRuleStr += "ε";
 
             ruleCount++;
@@ -182,94 +326,103 @@ int main (int argc, char* argv[])
             ruleList.push_back(singleRule);
             RHS_List.push_back(singRHS);
             LHS_List.push_back(singLHS);
-        }
-        //else
-        //    cout << "Rule not gotten; end of file" << endl;
+        } else if (testInput)
+            cout << "Rule not gotten; end of file" << endl;
 
         //TESTING
-        if((nestLoop == loopMax) && (token.token_type != HASH))
-            cout << "Loop manually broken for //Get each rule" << endl;
+        if (testInput)
+            if ((nestLoop == loopMax) && (token.token_type != HASH))
+                cout << "Loop manually broken for //Get each rule" << endl;
 
         //cout << "loopBreak = " << loopBreak << endl;
     }
+
+    if(testInput)
+    {
+        if ((loopBreak == loopMax) && (token.token_type != DOUBLEHASH))
+            cout << "Loop manually broken for //Get Rules" << endl;
+        else if (loopBreak == loopMax)
+            cout << "Weird error" << endl;
+        else if (loopBreak == 0)
+            cout << "Rule loop never entered" << endl;
+        else
+            cout << "Rules successfully gotten" << endl;
+    }
+    loopBreak = 0;
+
+
 
     /******************************************
      *                TESTING                 *
      * Task 0: Reading and categorizing input *
      ******************************************/
 
-    /*
-    if((loopBreak == loopMax) && (token.token_type != DOUBLEHASH))
-        cout << "Loop manually broken for //Get Rules" << endl;
-    else if(loopBreak == loopMax)
-        cout << "Weird error" << endl;
-    else if(loopBreak == 0)
-        cout << "Rule loop never entered" << endl;
-    else
-        cout << "Rules successfully gotten" << endl;
-    */
-    loopBreak = 0;
-
     //TESTING
-    /*
-    cout << "\n\nTERMINALS:" << endl;
-    for(iter = terms.begin(); iter != terms.end(); ++iter)
+    if(test0)
     {
-        iter->Print();
-    }
-
-    cout << "\n\nNON-TERMINALS:" << endl;
-    for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
-    {
-        iter->Print();
-    }
-
-    cout << "\n\nTotal rules: " << ruleCount << endl;
-    cout << "RULES:" << endl;
-    int tempRuleCount = 1;
-    for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-    {
-        cout << "\nRule #" << tempRuleCount << ":" << endl;
-        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+        cout << "\n\nTERMINALS:" << endl;
+        for (iter = terms.begin(); iter != terms.end(); ++iter)
+        {
             iter->Print();
-        tempRuleCount++;
-    }
+        }
 
-    cout << "\nRHS:" << endl;
-    for(vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
-    {
-        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+        cout << "\n\nNON-TERMINALS:" << endl;
+        for (iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
+        {
             iter->Print();
+        }
+
+        cout << "\n\nTotal rules: " << ruleCount << endl;
+        cout << "RULES:" << endl;
+        int tempRuleCount = 1;
+        for (vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+        {
+            cout << "\nRule #" << tempRuleCount << ":" << endl;
+            for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+                iter->Print();
+            tempRuleCount++;
+        }
+
+        cout << "\nRHS:" << endl;
+        for (vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
+        {
+            for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+                iter->Print();
+        }
     }
-     */
 
 
 
-/*
-    cout << "\nGRAMMAR:" << endl;
-    cout << termStr << endl;
-    cout << nonTermStr << "\n" << endl;
 
-    for(ruleStrIter = ruleStr.begin(); ruleStrIter != ruleStr.end(); ++ruleStrIter)
+    if(testRules)
     {
-        cout << *ruleStrIter << endl;
-    }
-*/
-/*
-    cout << "\nLHS:" << endl;
-    for(vecTokIter = LHS_List.begin(); vecTokIter != LHS_List.end(); ++vecTokIter)
-    {
-        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
-            cout << iter->lexeme << endl;
+        cout << "\nGRAMMAR:" << endl;
+        cout << termStr << endl;
+        cout << nonTermStr << "\n" << endl;
+
+        for (ruleStrIter = ruleStr.begin(); ruleStrIter != ruleStr.end(); ++ruleStrIter)
+        {
+            cout << *ruleStrIter << endl;
+        }
     }
 
-    cout << "\nRHS:" << endl;
-    for(vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
+    if(test0)
     {
-        for(iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
-            cout << iter->lexeme << endl;
+        cout << "\nLHS:" << endl;
+        for (vecTokIter = LHS_List.begin(); vecTokIter != LHS_List.end(); ++vecTokIter)
+        {
+            for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+                cout << iter->lexeme << endl;
+        }
+
+        cout << "\nRHS:" << endl;
+        for (vecTokIter = RHS_List.begin(); vecTokIter != RHS_List.end(); ++vecTokIter)
+        {
+            for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+                cout << iter->lexeme << endl;
+        }
     }
-*/
+
 
     /*
        Hint: You can modify and use the lexer from previous project
@@ -281,39 +434,48 @@ int main (int argc, char* argv[])
        use the lexer.
      */
 
+    /*************
+     * TASKS 1-5 *
+     *************/
+
     //Variables declared for switch cases:
     //Case 1
     int useCount = 0;
     //Case 2
-
+    vector<bool> genU;
     //Case 3
     //Case 4
     //Case 5
 
     switch (task) {
         case 1:
-            //cout << "\nStarting Task 1" << endl;
+            if(test1)
+                cout << "\nStarting Task 1" << endl;
 
             //For terminals
             for(iter = terms.begin(); iter != terms.end(); ++iter)
             {
-                //cout << "enter loop" << endl;
+                if(test1)
+                    cout << "enter loop" << endl;
 
                 for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
                 {
                     for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
                     {
-                        //cout << "inside loop" << endl;
+                        if(test1)
+                            cout << "inside loop" << endl;
                         if(iterNest->lexeme == iter->lexeme)
                         {
                             useCount++;
-                            //cout << "force loop-end test; next should be outside loop" << endl;
-                            //counting # of rules it appears in, not # of times it appears
-                            //exit loop in case same rule uses it twice
+                            if(test1)
+                                cout << "force loop-end test; next should be outside loop" << endl;
+                                //counting # of rules it appears in, not # of times it appears
+                                //exit loop in case same rule uses it twice
                             break;
                         }
                     }
-                    //cout << "outside loop" << endl;
+                    if(test1)
+                        cout << "outside loop" << endl;
                 }
 
                 cout << iter->lexeme << ": " << useCount << endl;
@@ -342,32 +504,50 @@ int main (int argc, char* argv[])
             }
 
 
-            //cout << "\nTask 1 Complete" << endl;
+            if(test1)
+                cout << "\nTask 1 Complete" << endl;
             break;
         case 2:
             // TODO: perform task 2.
-            cout << "\nStarting Task 2" << endl;
+            //Task 2: Find Useless Symbols
+            if(test2)
+                cout << "\nStarting Task 2" << endl;
 
+            genU = find_useless();
+            //print_set(genU);
 
-            cout << "\nTask 2 Complete" << endl;
+            if(test2)
+                cout << "\nTask 2 Complete" << endl;
             break;
 
         case 3:
             // TODO: perform task 3.
-            cout << "\nStarting Task 3" << endl;
-            cout << "\nTask 3 Complete" << endl;
+            //Task 3: Calculate FIRST Sets
+            if(test3)
+                cout << "\nStarting Task 3" << endl;
+
+            if(test3)
+                cout << "\nTask 3 Complete" << endl;
             break;
 
         case 4:
             // TODO: perform task 4.
-            cout << "\nStarting Task 4" << endl;
-            cout << "\nTask 4 Complete" << endl;
+            //Task 4: Calculate FOLLOW Sets
+            if(test4)
+                cout << "\nStarting Task 4" << endl;
+
+            if(test4)
+                cout << "\nTask 4 Complete" << endl;
             break;
 
         case 5:
             // TODO: perform task 5.
-            cout << "\nStarting Task 5" << endl;
-            cout << "\nTask 5 Complete" << endl;
+            //Determine if Grammar Has a Predictive Parser
+            if(test5)
+                cout << "\nStarting Task 5" << endl;
+
+            if(test5)
+                cout << "\nTask 5 Complete" << endl;
             break;
 
         default:

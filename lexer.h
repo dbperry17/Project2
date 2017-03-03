@@ -16,7 +16,7 @@
 typedef enum { END_OF_FILE = 0, ARROW, HASH, DOUBLEHASH, ID, ERROR } TokenType;
 
 class Token {
-  public:
+public:
     void Print();
 
     std::string lexeme;
@@ -25,12 +25,12 @@ class Token {
 };
 
 class LexicalAnalyzer {
-  public:
+public:
     Token GetToken();
     TokenType UngetToken(Token);
     LexicalAnalyzer();
 
-  private:
+private:
     std::vector<Token> tokens;
     int line_no;
     Token tmp;

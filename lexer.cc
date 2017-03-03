@@ -153,4 +153,3 @@ Token LexicalAnalyzer::GetToken()
             return tmp;
     }
 }
-
