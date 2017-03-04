@@ -28,11 +28,22 @@ bool testPrint = false;
 bool testUseless = true;
 
 
-
 //non-testing variables
-vector<string> universe;
-vector<string> universeFF; //FIRST & FOLLOW universe
-vector<string>::iterator strIter;
+LexicalAnalyzer lexer;
+Token token;
+vector<Token> terms;
+vector<Token> nonTerms;
+vector< vector<Token> > ruleList;
+vector< vector<Token> > RHS_List;
+vector< vector<Token> > LHS_List;
+vector< vector<int> > LHS_pos;
+vector< vector<int> > RHS_pos;
+vector<Token> universe;
+vector<Token> universeFF; //FIRST & FOLLOW universe
+//Iterating through vectors
+vector<Token>::iterator iter;
+vector<Token>::iterator iterNest;
+vector< vector<Token> >::iterator vecTokIter;
 
 //From powerpoint
 bool is_element(vector<bool> S, int i)
@@ -66,15 +77,74 @@ void print_set(vector<bool> S)
     int max = (int)S.size();
     for(int i = 0; i < max; i++)
         if(is_element(S, i))
-        {
-            cout << universe.at(i);
-            if(i != max - 1)
-                cout << ", ";
-            else
-                cout << "" << endl;
-        }
+            cout << universe.at(i).lexeme << " ";
+    cout << "" << endl;
     if(testPrint)
         cout << "done printing" << endl;
+}
+
+string findRules()
+{
+    string output = "";
+    int useCount = 0;
+    //For terminals
+    for(iter = terms.begin(); iter != terms.end(); ++iter)
+    {
+        if(test1)
+            cout << "enter loop" << endl;
+
+        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+        {
+            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+            {
+                if(test1)
+                    cout << "inside loop" << endl;
+                if(iterNest->lexeme == iter->lexeme)
+                {
+                    useCount++;
+
+                    if(test1)
+                        cout << "force loop-end test; next should be outside loop" << endl;
+                    //counting # of rules it appears in, not # of times it appears
+                    //exit loop in case same rule uses it twice
+                    break;
+                }
+            }
+            if(test1)
+                cout << "outside loop" << endl;
+        }
+
+        output += iter->lexeme;
+        output += ": ";
+        output += to_string(useCount);
+        output += "\n";
+        useCount = 0;
+    }
+
+    //For non-terminals
+    for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
+    {
+        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+        {
+            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+            {
+                if(iterNest->lexeme == iter->lexeme)
+                {
+                    useCount++;
+                    break;
+                }
+            }
+        }
+
+
+        output += iter->lexeme;
+        output += ": ";
+        output += to_string(useCount);
+        output += "\n";
+        useCount = 0;
+    }
+
+    return output;
 }
 
 /*
@@ -97,36 +167,88 @@ void print_set(vector<bool> S)
 vector<bool> find_useless()
 {
     vector<bool> genU(universe.size()); //generating for entire universe
-    int max = genU.size() - 1;
+    int maxGen = genU.size();
+    int maxTerm = universeFF.size();
+    bool noChanges = true;
     if(testUseless)
     {
         cout << "universe size = " << universe.size() << endl;
         cout << "genU size = " << genU.size() << endl;
+        cout << "maxGen size = " << maxGen << endl;
+        cout << "universeFF size = " << universeFF.size() << endl;
+        cout << "maxTerm size = " << maxTerm << endl;
         cout << "Printing Universe" << endl;
-        vector<bool> testVector(max + 1);
+        vector<bool> testVector(maxGen);
         fill(testVector.begin(),testVector.end(),true);
-        //for(int i = 0; i < max; i++)
+        //for(int i = 0; i < maxGen; i++)
           //  cout << "testVector[" << i << "] = " << testVector[i] << endl;
         print_set(testVector);
-        cout << "done printing universe" << endl;
+        cout << "done printing universe\nCONTINUING FUNCTION\n" << endl;
     }
 
-    /*
-    for(int i = 0, loopBreak = 0; ((i < max) && (loopBreak < loopMax)) || ((i < max) && (!testUseless)); i++, loopBreak++)
-    {
-        cout << "loop #" << loopBreak << endl;
-        if(is_element(genU, i))
-        {
+    //make terminals and epsilon generating
+    genU[0] = true;
 
-            genU[i] = true;
+    for(int i = 2, loopBreak = 0; ((i < maxTerm) && (loopBreak < loopMax)) ||
+                                  ((i < maxTerm) && (!testUseless)); i++, loopBreak++)
+    {
+        if(testUseless)
+            cout << "filling position " << i << endl;
+        genU[i] = true;
+    }
+
+    if(testUseless)
+    {
+        cout << "terminals generating:" << endl;
+        for(int i = 0; i < maxTerm; i++)
+            if(is_element(genU, i))
+            {
+                cout << universe.at(i).lexeme;
+                if(i < maxTerm - 1)
+                    cout << ", ";
+                else
+                    cout << "" << endl;
+            }
+    }
+
+    //checking variables
+    if(testUseless)
+        cout << "checking variables" << endl;
+    while((noChanges && (loopBreak < loopMax)) || (noChanges && !testUseless))
+    {
+        loopBreak ++;
+        noChanges = true;
+        for (int i = maxTerm, loopBreak = 0; ((i < maxGen) && (loopBreak < loopMax)) ||
+                                             ((i < maxGen) && (!testUseless)); i++, loopBreak++)
+        {
+            //if(universe[i] )
+            //for()
+            {
+                bool tempBool = genU[i];
+                if (testUseless)
+                    cout << "tempBool = " << tempBool << endl;
+                cout << "loop #" << loopBreak << endl;
+                if (is_element(genU, i))
+                    genU[i] = true;
+
+                if (testUseless)
+                    cout << universe[i].lexeme << " = " << genU[i] << "\n" << endl;
+
+
+                if (genU[i] != tempBool)
+                    noChanges = false;
+            }
         }
     }
-    if(loopBreak == loopMax)
+
+
+    if((loopBreak == loopMax) && testUseless)
         cout << "loop forcibly broken" << endl;
     loopBreak = 0;
 
-    print_set(genU);
-    */
+    if(testUseless)
+        cout << "Useless symbols found. Exiting function." << endl;
+
 
     return genU;
 }
@@ -137,12 +259,16 @@ vector<bool> find_useless()
 
 int main (int argc, char* argv[])
 {
+    /***********************
+     * INITIALIZING THINGS *
+     ***********************/
     if(testing)
         cout << "\nSTARTING PROGRAM" << endl;
     else
     {
         //so that I don't have to change them all individually when I'm completely done with testing
         testInput = false;
+        testRules = false;
         test0 = false;
         test1 = false;
         test2 = false;
@@ -171,17 +297,7 @@ int main (int argc, char* argv[])
     task = atoi(argv[1]);
 
     // TODO: Read the input grammar at this point from standard input
-    LexicalAnalyzer lexer;
-    Token token;
-    vector<Token> terms;
-    vector<Token> nonTerms;
-    vector< vector<Token> > ruleList;
-    vector< vector<Token> > RHS_List;
-    vector< vector<Token> > LHS_List;
-    //Iterating through vectors
-    vector<Token>::iterator iter;
-    vector<Token>::iterator iterNest;
-    vector< vector<Token> >::iterator vecTokIter;
+
 
     //TESTING
     int ruleCount = 0;
@@ -196,18 +312,23 @@ int main (int argc, char* argv[])
     /******************************************
      * Task 0: Reading and categorizing input *
      ******************************************/
-
-
     //Get terminals
     if(testInput)
         cout << "Starting Task 0" << endl;
 
-    token = lexer.GetToken(); //To initiate while loop
+    token.lexeme = "#";
+    token.token_type = HASH;
+    token.line_no = 0;
+    universe.push_back(token);
+    universeFF.push_back(token);
 
-    universe.push_back("#");
-    universe.push_back("$");
-    universeFF.push_back("#");
-    universeFF.push_back("$");
+    token.lexeme = "$";
+    token.token_type = DOUBLEHASH;
+    universe.push_back(token);
+    universeFF.push_back(token);
+
+
+    token = lexer.GetToken(); //To initiate while loop
 
     if(testInput)
         cout << "Getting terminals" << endl;
@@ -219,8 +340,8 @@ int main (int argc, char* argv[])
         termStr += token.lexeme;
         termStr += ", ";
 
-        universe.push_back(token.lexeme);
-        universeFF.push_back(token.lexeme);
+        universe.push_back(token);
+        universeFF.push_back(token);
 
         token = lexer.GetToken();
         //cout << "loopBreak = " << loopBreak << endl;
@@ -250,7 +371,7 @@ int main (int argc, char* argv[])
         nonTermStr += token.lexeme;
         nonTermStr += ", ";
 
-        universe.push_back(token.lexeme);
+        universe.push_back(token);
 
         token = lexer.GetToken();
         //cout << "loopBreak = " << loopBreak << endl;
@@ -350,13 +471,10 @@ int main (int argc, char* argv[])
     }
     loopBreak = 0;
 
-
-
     /******************************************
      *                TESTING                 *
      * Task 0: Reading and categorizing input *
      ******************************************/
-
     //TESTING
     if(test0)
     {
@@ -440,7 +558,7 @@ int main (int argc, char* argv[])
 
     //Variables declared for switch cases:
     //Case 1
-    int useCount = 0;
+
     //Case 2
     vector<bool> genU;
     //Case 3
@@ -451,58 +569,7 @@ int main (int argc, char* argv[])
         case 1:
             if(test1)
                 cout << "\nStarting Task 1" << endl;
-
-            //For terminals
-            for(iter = terms.begin(); iter != terms.end(); ++iter)
-            {
-                if(test1)
-                    cout << "enter loop" << endl;
-
-                for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-                {
-                    for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-                    {
-                        if(test1)
-                            cout << "inside loop" << endl;
-                        if(iterNest->lexeme == iter->lexeme)
-                        {
-                            useCount++;
-                            if(test1)
-                                cout << "force loop-end test; next should be outside loop" << endl;
-                                //counting # of rules it appears in, not # of times it appears
-                                //exit loop in case same rule uses it twice
-                            break;
-                        }
-                    }
-                    if(test1)
-                        cout << "outside loop" << endl;
-                }
-
-                cout << iter->lexeme << ": " << useCount << endl;
-                useCount = 0;
-            }
-
-            useCount = 0;
-
-            //For non-terminals
-            for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
-            {
-                for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-                {
-                    for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-                    {
-                        if(iterNest->lexeme == iter->lexeme)
-                        {
-                            useCount++;
-                            break;
-                        }
-                    }
-                }
-
-                cout << iter->lexeme << ": " << useCount << endl;
-                useCount = 0;
-            }
-
+            cout << findRules() << endl;
 
             if(test1)
                 cout << "\nTask 1 Complete" << endl;
@@ -514,7 +581,7 @@ int main (int argc, char* argv[])
                 cout << "\nStarting Task 2" << endl;
 
             genU = find_useless();
-            //print_set(genU);
+            print_set(genU);
 
             if(test2)
                 cout << "\nTask 2 Complete" << endl;
