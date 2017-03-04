@@ -26,6 +26,7 @@ bool test5 = true;
 bool testElement = false;
 bool testPrint = false;
 bool testUseless = true;
+bool testLabel = true;
 
 
 //non-testing variables
@@ -36,8 +37,7 @@ vector<Token> nonTerms;
 vector< vector<Token> > ruleList;
 vector< vector<Token> > RHS_List;
 vector< vector<Token> > LHS_List;
-vector< vector<int> > LHS_pos;
-vector< vector<int> > RHS_pos;
+
 vector<Token> universe;
 vector<Token> universeFF; //FIRST & FOLLOW universe
 //Iterating through vectors
@@ -86,56 +86,42 @@ void print_set(vector<bool> S)
 string findRules()
 {
     string output = "";
+    bool counted = false;
     int useCount = 0;
-    //For terminals
-    for(iter = terms.begin(); iter != terms.end(); ++iter)
-    {
-        if(test1)
-            cout << "enter loop" << endl;
+    int ruleNum = -1;
+    int uniPos = 1;
+    vector< vector<int> > rulePos;
 
+
+    //Look at each item in universe
+    for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
+    {
+        uniPos++;
+        //Look at each rule (vecTokIter)
         for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
         {
+            ruleNum++;
+            vector<int> lPos;
+            //Look at each token (iterNest) in each rule (vecTokIter)
             for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
             {
-                if(test1)
-                    cout << "inside loop" << endl;
+                //if current token (iterNest) in current rule (vecTokIter) matches current token in universe (iter)
                 if(iterNest->lexeme == iter->lexeme)
                 {
-                    useCount++;
-
-                    if(test1)
-                        cout << "force loop-end test; next should be outside loop" << endl;
                     //counting # of rules it appears in, not # of times it appears
-                    //exit loop in case same rule uses it twice
-                    break;
+                    if(!counted)
+                    {
+                        useCount++;
+                        counted = true;
+                    }
+
+                    //add the universe position to the rules
+                    lPos.push_back(uniPos);
                 }
+
             }
-            if(test1)
-                cout << "outside loop" << endl;
+            counted = false;
         }
-
-        output += iter->lexeme;
-        output += ": ";
-        output += to_string(useCount);
-        output += "\n";
-        useCount = 0;
-    }
-
-    //For non-terminals
-    for(iter = nonTerms.begin(); iter != nonTerms.end(); ++iter)
-    {
-        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-        {
-            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-            {
-                if(iterNest->lexeme == iter->lexeme)
-                {
-                    useCount++;
-                    break;
-                }
-            }
-        }
-
 
         output += iter->lexeme;
         output += ": ";
@@ -145,6 +131,76 @@ string findRules()
     }
 
     return output;
+}
+
+vector< vector<int> > labelRules()
+{
+    if(testLabel)
+        cout << "Testing labelRules" << endl;
+
+    int tempLoop = 0;
+    int ruleNum = -1;
+    int uniPosIter = 1;
+    vector<vector<int> > rulePos;
+
+    //Look at each rule (vecTokIter)
+    for (vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+    {
+        ruleNum++;
+        vector<int> uniPos;
+        //Look at each token (iter) in each rule (vecTokIter)
+        for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
+        {
+            //Look at each universe item
+            for (iterNest = universe.begin() + 2; iterNest != universe.end(); ++iterNest)
+            {
+                uniPosIter++;
+
+                if(testLabel)
+                {
+                    cout << "loop #" << to_string(tempLoop) << endl;
+                    cout << "Current lexeme = " << iter->lexeme << endl;
+                    cout << "uniPosIter = " << to_string(uniPosIter) << endl;
+                    tempLoop++;
+                }
+
+                //if current universe item (iterNest) matches current token (iter) in current rule (vecTokIter)
+                if (iterNest->lexeme == iter->lexeme)
+                {
+                    //add the universe position to the rules
+                    uniPos.push_back(uniPosIter);
+                    if(testLabel)
+                        cout << "Found! uniPosIter = " << to_string(uniPosIter) << endl;
+                }
+                else
+                {
+                    cout << "no match found" << endl;
+                }
+            }
+            if(testLabel)
+            {
+                cout << "uniPos = ";
+                for (vector<int>::iterator iter = uniPos.begin(); iter != uniPos.end(); ++iter)
+                    cout << to_string(*iter) << ' ';
+                cout << "" << endl;
+            }
+            uniPosIter = 1;
+        }
+        rulePos.push_back(uniPos);
+
+        if(testLabel)
+        {
+            for (vector<int>::iterator iter = uniPos.begin(); iter != uniPos.end(); ++iter)
+                cout << to_string(*iter) << ' ';
+
+            cout << "" << endl;
+        }
+    }
+
+    if(testLabel)
+        cout << "Done testing labelRules" << endl;
+    return rulePos;
+
 }
 
 /*
@@ -226,8 +282,10 @@ vector<bool> find_useless()
             {
                 bool tempBool = genU[i];
                 if (testUseless)
+                {
                     cout << "tempBool = " << tempBool << endl;
-                cout << "loop #" << loopBreak << endl;
+                    cout << "loop #" << loopBreak << endl;
+                }
                 if (is_element(genU, i))
                     genU[i] = true;
 
@@ -278,6 +336,7 @@ int main (int argc, char* argv[])
         testElement = false;
         testPrint = false;
         testUseless = false;
+        testLabel = false;
     }
 
     int task;
@@ -539,6 +598,16 @@ int main (int argc, char* argv[])
             for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
                 cout << iter->lexeme << endl;
         }
+
+    }
+
+    if(testing)
+    {
+        cout << "Printing Universe" << endl;
+        vector<bool> testVector(universe.size());
+        fill(testVector.begin(), testVector.end(), true);
+        print_set(testVector);
+        labelRules();
     }
 
 
