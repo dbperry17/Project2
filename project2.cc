@@ -26,7 +26,7 @@ bool test5 = true;
 bool testElement = false;
 bool testPrint = false;
 bool testUseless = true;
-bool testLabel = true;
+bool testLabel = false;
 
 
 //non-testing variables
@@ -220,13 +220,17 @@ vector< vector<int> > labelRules()
  *      universe[variable] = generating
  */
 
-vector<bool> find_useless()
+vector<bool> find_useless(vector < vector<int> > ruleInts)
 {
+    if(testUseless)
+    {
+        cout << "\nStarting findUseless" << endl;
+    }
     vector<bool> genU(universe.size()); //generating for entire universe
     int maxGen = genU.size();
     int maxTerm = universeFF.size();
-    bool noChanges = true;
-    if(testUseless)
+    bool noChanges = false;
+    if(false)
     {
         cout << "universe size = " << universe.size() << endl;
         cout << "genU size = " << genU.size() << endl;
@@ -270,10 +274,64 @@ vector<bool> find_useless()
     //checking variables
     if(testUseless)
         cout << "checking variables" << endl;
-    while((noChanges && (loopBreak < loopMax)) || (noChanges && !testUseless))
+    //While changes have been made
+    while((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testUseless))
     {
         loopBreak ++;
+        bool generating = true;
+        if(testUseless)
+        {
+            cout << "Loop #" << loopBreak << endl;
+        }
         noChanges = true;
+
+        //For each rule (i) in
+        for(int i = maxTerm, nestLoop = 0; ((i < maxGen) && (nestLoop < loopMax)) ||
+            (i < maxGen) && (!testUseless); i++, nestLoop++)
+        {
+            vector<int> oneRule = ruleInts[i];
+            int maxRules = oneRule.size();
+            if(testUseless)
+            {
+                cout << "Now testing rule #" << (i + 1) <<  endl;
+            }
+
+            //only check RHS if it's not currently generating;
+            //no sense in rechecking rules we've already confirmed
+            if(!is_element(genU, oneRule[0]))
+            {
+                //for each item on RHS
+                //starts at 1 because oneRule[0] = LHS
+                for(int j = 1, nest2loop = 0; ((j < maxRules) && (nest2loop < loopMax)) ||
+                                              ((j < maxRules) && !testUseless); j++, nest2loop++)
+                {
+                    if(testUseless)
+                    {
+                        cout << "Is " << oneRule[i] << "generating?";
+                    }
+                    if(is_element(genU, oneRule[j]))
+                    {
+                        if(testUseless)
+                        {
+                            cout << "Yes." << endl;
+                        }
+                    }
+                    else
+                    {
+                        if(testUseless)
+                        {
+                            cout << "No." << endl;
+                        }
+                        generating = false;
+                    }
+                }
+
+            }
+
+        }
+
+
+        /*
         for (int i = maxTerm, loopBreak = 0; ((i < maxGen) && (loopBreak < loopMax)) ||
                                              ((i < maxGen) && (!testUseless)); i++, loopBreak++)
         {
@@ -297,6 +355,7 @@ vector<bool> find_useless()
                     noChanges = false;
             }
         }
+        */
     }
 
 
@@ -306,7 +365,6 @@ vector<bool> find_useless()
 
     if(testUseless)
         cout << "Useless symbols found. Exiting function." << endl;
-
 
     return genU;
 }
@@ -627,9 +685,9 @@ int main (int argc, char* argv[])
 
     //Variables declared for switch cases:
     //Case 1
-
     //Case 2
     vector<bool> genU;
+    vector< vector<int> > ruleInts;
     //Case 3
     //Case 4
     //Case 5
@@ -639,7 +697,6 @@ int main (int argc, char* argv[])
             if(test1)
                 cout << "\nStarting Task 1" << endl;
             cout << findRules() << endl;
-
             if(test1)
                 cout << "\nTask 1 Complete" << endl;
             break;
@@ -648,8 +705,8 @@ int main (int argc, char* argv[])
             //Task 2: Find Useless Symbols
             if(test2)
                 cout << "\nStarting Task 2" << endl;
-
-            genU = find_useless();
+            ruleInts = labelRules();
+            genU = find_useless(ruleInts);
             print_set(genU);
 
             if(test2)
