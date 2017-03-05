@@ -4,6 +4,7 @@
 
 //Things I'm including
 #include <vector>
+#include <algorithm>
 #include "lexer.h"
 
 using namespace std;
@@ -85,56 +86,6 @@ void print_set(vector<bool> S)
         cout << "done printing" << endl;
 }
 
-string findRules()
-{
-    string output = "";
-    bool counted = false;
-    int useCount = 0;
-    int ruleNum = -1;
-    int uniPos = 1;
-    vector< vector<int> > rulePos;
-
-
-    //Look at each item in universe
-    for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
-    {
-        uniPos++;
-        //Look at each rule (vecTokIter)
-        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-        {
-            ruleNum++;
-            vector<int> lPos;
-            //Look at each token (iterNest) in each rule (vecTokIter)
-            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-            {
-                //if current token (iterNest) in current rule (vecTokIter) matches current token in universe (iter)
-                if(iterNest->lexeme == iter->lexeme)
-                {
-                    //counting # of rules it appears in, not # of times it appears
-                    if(!counted)
-                    {
-                        useCount++;
-                        counted = true;
-                    }
-
-                    //add the universe position to the rules
-                    lPos.push_back(uniPos);
-                }
-
-            }
-            counted = false;
-        }
-
-        output += iter->lexeme;
-        output += ": ";
-        output += to_string(useCount);
-        output += "\n";
-        useCount = 0;
-    }
-
-    return output;
-}
-
 vector< vector<int> > labelRules()
 {
     if(testLabel)
@@ -203,6 +154,118 @@ vector< vector<int> > labelRules()
         cout << "Done testing labelRules" << endl;
     return rulePos;
 
+}
+
+string ruleCount_a()
+{
+    string output = "";
+    bool counted = false;
+    int useCount = 0;
+    int ruleNum = -1;
+    int uniPos = 1;
+    vector< vector<int> > rulePos;
+
+
+    //Look at each item in universe
+    for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
+    {
+        uniPos++;
+        //Look at each rule (vecTokIter)
+        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+        {
+            ruleNum++;
+            vector<int> lPos;
+            //Look at each token (iterNest) in each rule (vecTokIter)
+            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+            {
+                //if current token (iterNest) in current rule (vecTokIter) matches current token in universe (iter)
+                if(iterNest->lexeme == iter->lexeme)
+                {
+                    //counting # of rules it appears in, not # of times it appears
+                    if(!counted)
+                    {
+                        useCount++;
+                        counted = true;
+                    }
+
+                    //add the universe position to the rules
+                    lPos.push_back(uniPos);
+                }
+
+            }
+            counted = false;
+        }
+
+        output += iter->lexeme;
+        output += ": ";
+        output += to_string(useCount);
+        output += "\n";
+        useCount = 0;
+    }
+
+    return output;
+}
+
+/**
+ * bitvector marking rule numbers for LHSs
+ * bitVector marking rule numbers for RHSs
+ *
+ * return bitvector<vector> containing LHS and RHS bitvectors
+ * task 1: print size of each vector
+ *
+ * Idea: use bitVector???
+ */
+
+vector <vector< vector<int> > > ruleCount()
+{
+    //ruleNum starts at 0 because I don't feel like dealing with off-by-one errors later
+    int ruleNum = -1;
+    vector< vector<int> > ruleLHS; //2D vector purely for storange purposes
+    vector< vector<int> > ruleRHS;
+    vector< vector< vector<int> > > ruleCounter;
+
+
+    //Look at each element in universe
+    for(iter = universe.begin(); iter != universe.end(); ++iter)
+    {
+        ruleNum = -1;
+        vector<int> singRHS;
+        //Look at each rule (vecTokIter)
+        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter, ruleNum++)
+        {
+            ruleNum++;
+
+            //For rules that go to epsilon
+            if((vecTokIter->size() == 2) && (iter == universe.begin()))
+            {
+                singRHS.push_back(ruleNum);
+            }
+            else
+            {
+                //Look at each token (iterNest) in each rule (vecTokIter)
+                for (iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+                {
+                    //if current token (iterNest) in current rule (vecTokIter)
+                    // matches current element in universe (iter)
+                    if (iterNest->lexeme == iter->lexeme)
+                    {
+                        //If first element (iterNest) in rule (vecTokIter), add to LHS
+                        if (iterNest == vecTokIter->begin())
+                            ruleLHS.push_back(ruleNum);
+                        //else if element not already on RHS
+                        else if(!(find(singRHS.begin(), singRHS.end(), ruleNum) != singRHS.end()))
+                            singRHS.push_back(ruleNum);
+                    }
+                }
+            }
+        }
+        ruleRHS.push_back(singRHS);
+    }
+
+    ruleCounter.push_back(ruleLHS);
+    ruleCounter.push_back(ruleRHS);
+
+    return ruleCounter;
 }
 
 void printRules(vector < vector<bool> > rules)
@@ -442,7 +505,7 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
  * return reach
  *
  */
-vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms)
+vector<bool> findReachable(vector < vector<int> > ruleInts, vector< vector<bool> > ruleSyms)
 {
     if(testReach)
     {
@@ -711,6 +774,7 @@ int main (int argc, char* argv[])
         testUseless = false;
     }
 
+    // NOTE: Below it teacher's code. Do not touch.
     int task;
 
     if (argc < 2)
@@ -726,10 +790,12 @@ int main (int argc, char* argv[])
      */
 
     task = atoi(argv[1]);
+    //NOTE: Above is teacher's code; do not touch
 
-    // TODO: Read the input grammar at this point from standard input
 
-
+    /******************************************
+     * Task 0: Reading and categorizing input *
+     ******************************************/
     //TESTING
     int ruleCount = 0;
     string termStr = "Terminals = {";
@@ -739,11 +805,7 @@ int main (int argc, char* argv[])
     ruleStr.push_back("RULES:");
     vector<string>::iterator ruleStrIter;
 
-
-    /******************************************
-     * Task 0: Reading and categorizing input *
-     ******************************************/
-    //Get terminals
+    //Get Terminals
     if(testInput)
         cout << "Starting Task 0" << endl;
 
@@ -788,7 +850,6 @@ int main (int argc, char* argv[])
         if((loopBreak == loopMax))// && (token.token_type != HASH))
             cout << "Loop manually broken for //Get terminals" << endl;
     loopBreak = 0; //for testing
-
 
     if(testInput)
         cout << "Getting non-terminals" << endl;
@@ -929,6 +990,7 @@ int main (int argc, char* argv[])
             cout << "\nRule #" << tempRuleCount << ":" << endl;
             for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
                 iter->Print();
+            cout << "Size of Rule: " << vecTokIter->size();
             tempRuleCount++;
         }
 
@@ -982,7 +1044,6 @@ int main (int argc, char* argv[])
         labelRules();
     }
 
-
     /*
        Hint: You can modify and use the lexer from previous project
        to read the input. Note that there are only 4 token types needed
@@ -999,6 +1060,8 @@ int main (int argc, char* argv[])
 
     //Variables declared for switch cases:
     //Case 1
+    string output1 = "";
+    vector< vector< vector<int> > > ruleCounter;
     //Case 2
     vector<bool> genU;
     vector< vector<int> > ruleInts;
@@ -1006,60 +1069,65 @@ int main (int argc, char* argv[])
     //Case 3
     //Case 4
     //Case 5
+    if(testing)
+        cout << "\nStarting task #" << task << endl;
 
     switch (task) {
         case 1:
-            if(test1)
-                cout << "\nStarting Task 1" << endl;
-            cout << findRules() << endl;
-            if(test1)
-                cout << "\nTask 1 Complete" << endl;
+            ruleCounter = ruleCount();
+            //Look at each element in universe
+            for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
+            {
+                //Look at each rule (vecTokIter)
+                for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter, ruleNum++)
+                {
+                    //Look at each token (iterNest) in each rule (vecTokIter)
+                    for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+                    {
+                        //if current token (iterNest) in current rule (vecTokIter)
+                        // matches current element in universe (iter)
+                        if()
+                        {
+
+                        }
+                    }
+                }
+            }
+
+
+
+            cout << output1 << endl;
             break;
         case 2:
             // TODO: perform task 2.
             //Task 2: Find Useless Symbols
-            if(test2)
-                cout << "\nStarting Task 2" << endl;
             ruleInts = labelRules();
             newRules = findUseless(ruleInts);
             print_set(genU);
-            if(test2)
-                cout << "\nTask 2 Complete" << endl;
             break;
 
         case 3:
             // TODO: perform task 3.
             //Task 3: Calculate FIRST Sets
-            if(test3)
-                cout << "\nStarting Task 3" << endl;
-
-            if(test3)
-                cout << "\nTask 3 Complete" << endl;
             break;
 
         case 4:
             // TODO: perform task 4.
             //Task 4: Calculate FOLLOW Sets
             if(test4)
-                cout << "\nStarting Task 4" << endl;
-
-            if(test4)
-                cout << "\nTask 4 Complete" << endl;
             break;
 
         case 5:
             // TODO: perform task 5.
             //Determine if Grammar Has a Predictive Parser
-            if(test5)
-                cout << "\nStarting Task 5" << endl;
-
-            if(test5)
-                cout << "\nTask 5 Complete" << endl;
             break;
 
         default:
             cout << "Error: unrecognized task number " << task << "\n";
             break;
     }
+
+    if(testing)
+        cout << "Task " << task << " complete" << endl;
     return 0;
 }
