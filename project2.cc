@@ -172,7 +172,7 @@ vector< vector<int> > labelRules()
                     if(testLabel)
                         cout << "Found! uniPosIter = " << to_string(uniPosIter) << endl;
                 }
-                else
+                else if(testLabel)
                 {
                     cout << "no match found" << endl;
                 }
@@ -277,43 +277,60 @@ vector<bool> find_useless(vector < vector<int> > ruleInts)
     //While changes have been made
     while((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testUseless))
     {
-        loopBreak ++;
+        loopBreak++;
         bool generating = true;
+        int maxRules = (int)ruleInts.size();
         if(testUseless)
         {
-            cout << "Loop #" << loopBreak << endl;
+            cout << "\nLoop #" << loopBreak << endl;
         }
         noChanges = true;
 
         //For each rule (i) in
-        for(int i = maxTerm, nestLoop = 0; ((i < maxGen) && (nestLoop < loopMax)) ||
-            (i < maxGen) && (!testUseless); i++, nestLoop++)
+        if(testUseless)
+        {
+            cout << "Starting loop for each rule" << endl;
+        }
+        int nestLoop = 0;
+        for(int i = 0, nestLoop = 0; ((i < maxRules) && (nestLoop < loopMax)) ||
+                ((i < maxRules) && (!testUseless)); i++, nestLoop++)
         {
             vector<int> oneRule = ruleInts[i];
-            int maxRules = oneRule.size();
+            int ruleSize = (int)oneRule.size();
+            int ruleNum = oneRule[0];
+            bool oldBool = is_element(genU, ruleNum);
+            string tempLHS = universe[ruleNum].lexeme;
             if(testUseless)
             {
-                cout << "Now testing rule #" << (i + 1) <<  endl;
+                cout << "\nNow testing rule #" << (i + 1) << ": "
+                     << tempLHS <<  endl;
             }
 
             //only check RHS if it's not currently generating;
             //no sense in rechecking rules we've already confirmed
-            if(!is_element(genU, oneRule[0]))
+            if(!is_element(genU, ruleNum))
             {
+                if(testUseless)
+                {
+                    cout << tempLHS << " is not generating." << endl;
+                    cout << "Starting loop for each item in RHS" << endl;
+                }
                 //for each item on RHS
                 //starts at 1 because oneRule[0] = LHS
-                for(int j = 1, nest2loop = 0; ((j < maxRules) && (nest2loop < loopMax)) ||
-                                              ((j < maxRules) && !testUseless); j++, nest2loop++)
+                int nest2Loop = 0;
+                for(int j = 1, nest2loop = 0; ((j < ruleSize) && (nest2loop < loopMax)) ||
+                    ((j < ruleSize) && !testUseless); j++, nest2loop++)
                 {
                     if(testUseless)
                     {
-                        cout << "Is " << oneRule[i] << "generating?";
+                        cout << "Is " << universe[oneRule[j]].lexeme
+                             << " generating? ";
                     }
                     if(is_element(genU, oneRule[j]))
                     {
                         if(testUseless)
                         {
-                            cout << "Yes." << endl;
+                            cout << "Yes" << endl;
                         }
                     }
                     else
@@ -325,11 +342,52 @@ vector<bool> find_useless(vector < vector<int> > ruleInts)
                         generating = false;
                     }
                 }
+                if((nest2Loop == loopMax) && (testUseless))
+                {
+                    cout << "RHS loop forcibly broken." << endl;
+                }
 
+
+                //if entire RHS is generating, say variable is generating
+                if(generating)
+                {
+                    if(testUseless)
+                    {
+                        cout << "Rule #" << (i + 1) << ": "
+                             << tempLHS << "is generating" << endl;
+                    }
+                    genU[ruleNum] = true;
+                }
+                else if(testUseless)
+                {
+                    cout << "Rule #" << (i + 1) << ": " << tempLHS
+                         << "is not generating." << endl;
+                }
+
+                //if changes were made
+                if(genU[ruleNum] != oldBool)
+                {
+                    noChanges = false;
+                    if(testUseless)
+                    {
+                        cout << "Changes made. Restarting Loop." << endl;
+                    }
+                }
+                else if(testUseless)
+                {
+                    cout << "No changes made. Done." << endl;
+                }
             }
-
+            else if(testUseless)
+            {
+                cout << tempLHS << " is generating." << endl;
+                cout << "Skipping RHS loop." << endl;
+            }
         }
-
+        if((nestLoop == loopMax) && (testUseless))
+        {
+            cout << "LHS rule forcibly broken" << endl;
+        }
 
         /*
         for (int i = maxTerm, loopBreak = 0; ((i < maxGen) && (loopBreak < loopMax)) ||
@@ -360,7 +418,7 @@ vector<bool> find_useless(vector < vector<int> > ruleInts)
 
 
     if((loopBreak == loopMax) && testUseless)
-        cout << "loop forcibly broken" << endl;
+        cout << "While loop forcibly broken" << endl;
     loopBreak = 0;
 
     if(testUseless)
