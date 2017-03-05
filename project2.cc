@@ -231,7 +231,7 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
 {
     if(testGenerating)
     {
-        cout << "\nStarting findUseless" << endl;
+        cout << "\nStarting findGenerating" << endl;
     }
     vector<bool> genU(universe.size()); //generating for entire universe
     int maxTerm = (int)universeFF.size();
@@ -245,8 +245,6 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
         cout << "Printing Universe" << endl;
         vector<bool> testVector(genU.size());
         fill(testVector.begin(),testVector.end(),true);
-        //for(int i = 0; i < maxGen; i++)
-          //  cout << "testVector[" << i << "] = " << testVector[i] << endl;
         print_set(testVector);
         cout << "done printing universe\nCONTINUING FUNCTION\n" << endl;
     }
@@ -433,13 +431,22 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
 /*
  * Pseudocode:
  *
+ * vector<bool> reach
+ * Set terminals as true in reach
+ * set S as true in reach
+ * while changes are being made
+ *      for all rules
+ *          if rule contains only generating symbols
+ *              set rule as true in reach
+ *
+ * return reach
  *
  */
 vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms)
 {
-    if(testUseless)
+    if(testReach)
     {
-        cout << "\nStarting findUseless" << endl;
+        cout << "\nStarting findReachable" << endl;
     }
     vector<bool> reachU(universe.size()); //reachable for entire universe
     int maxTerm = (int)universeFF.size();
@@ -447,16 +454,16 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
 
     //make terminals and epsilon reachable
     reachU[0] = true;
-    if(testUseless)
+    if(testReach)
     {
         cout << "Setting terminals and epsilon to True." << endl;
         cout << "Element #0: " << universe[0].lexeme << " is reachable." << endl;
     }
 
     for(int i = 2, loopBreak = 0; ((i < maxTerm) && (loopBreak < loopMax)) ||
-                                  ((i < maxTerm) && (!testUseless)); i++, loopBreak++)
+                                  ((i < maxTerm) && (!testReach)); i++, loopBreak++)
     {
-        if(testUseless)
+        if(testReach)
         {
             cout << "Element #" << i << ": " << universe[i].lexeme
                  << " is reachable." << endl;
@@ -465,7 +472,7 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
     }
 
 
-    if(testUseless)
+    if(testReach)
     {
         cout << "Items reachable: ";
         for(int i = 0; i < maxTerm; i++)
@@ -480,28 +487,28 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
     }
 
     //checking variables
-    if(testUseless)
+    if(testReach)
         cout << "\nChecking variables" << endl;
     //While changes have been made
-    while((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testUseless))
+    while((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testReach))
     {
         loopBreak++;
         bool reachable = true;
         int maxRules = (int)ruleInts.size();
-        if(testUseless)
+        if(testReach)
         {
             cout << "\nLoop #" << loopBreak << endl;
         }
         noChanges = true;
 
         //For each rule (i) in
-        if(testUseless)
+        if(testReach)
         {
             cout << "Starting loop for each rule" << endl;
         }
         int nestLoop = 0;
-        for(int i = 0, nestLoop = 0; ((i < maxRules) && (nestLoop < loopMax)) ||
-                                     ((i < maxRules) && (!testUseless)); i++, nestLoop++)
+        for(int i = 0; ((i < maxRules) && (nestLoop < loopMax)) ||
+                                     ((i < maxRules) && (!testReach)); i++, nestLoop++)
         {
             reachable = true;
             vector<int> oneRule = ruleInts[i];
@@ -509,21 +516,21 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
             int ruleNum = oneRule[0];
             bool oldBool = is_element(reachU, ruleNum);
             string tempLHS = universe[ruleNum].lexeme;
-            if (testUseless)
+            if (testReach)
             {
                 cout << "\nNow testing rule #" << (i + 1) << ": "
                      << tempLHS << endl;
             }
             if(is_element(reachU, ruleNum))
             {
-                if (testUseless)
+                if (testReach)
                 {
                     cout << tempLHS << " is reachable. Skipping RHS loop." << endl;
                 }
             }
             else
             {
-                if (testUseless)
+                if (testReach)
                 {
                     cout << tempLHS << " is not reachable." << endl;
                     cout << "Starting loop for each item in RHS" << endl;
@@ -532,30 +539,30 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
                 //starts at 1 because oneRule[0] = LHS
                 int nest2Loop = 0;
                 for (int j = 1, nest2loop = 0; ((j < ruleSize) && (nest2loop < loopMax)) ||
-                                               ((j < ruleSize) && !testUseless); j++, nest2loop++)
+                                               ((j < ruleSize) && !testReach); j++, nest2loop++)
                 {
-                    if (testUseless)
+                    if (testReach)
                     {
                         cout << "Is " << universe[oneRule[j]].lexeme
                              << " reachable? ";
                     }
                     if (is_element(reachU, oneRule[j]))
                     {
-                        if (testUseless)
+                        if (testReach)
                         {
                             cout << "Yes" << endl;
                         }
                     }
                     else
                     {
-                        if (testUseless)
+                        if (testReach)
                         {
                             cout << "No." << endl;
                         }
                         reachable = false;
                     }
                 }
-                if ((nest2Loop == loopMax) && (testUseless))
+                if ((nest2Loop == loopMax) && (testReach))
                 {
                     cout << "RHS loop forcibly broken." << endl;
                 }
@@ -564,14 +571,14 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
                 //if entire RHS is reachable, say variable is reachable
                 if (reachable)
                 {
-                    if (testUseless)
+                    if (testReach)
                     {
                         cout << "Rule #" << (i + 1) << ": "
                              << tempLHS << " is reachable" << endl;
                     }
                     reachU[ruleNum] = true;
                 }
-                else if (testUseless)
+                else if (testReach)
                 {
                     cout << "Rule #" << (i + 1) << ": " << tempLHS
                          << " is not reachable." << endl;
@@ -580,7 +587,7 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
                 //if changes were made
                 if (reachU[ruleNum] != oldBool)
                 {
-                    if (testUseless)
+                    if (testReach)
                     {
                         cout << "reachU[ruleNum] = " << reachU[ruleNum] << endl;
                         cout << "oldBool = " << oldBool << endl;
@@ -588,7 +595,7 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
                     }
                     noChanges = false;
                 }
-                else if (testUseless)
+                else if (testReach)
                 {
                     cout << "reachU[ruleNum] = " << reachU[ruleNum] << endl;
                     cout << "oldBool = " << oldBool << endl;
@@ -596,24 +603,24 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
                 }
             }
         }
-        if((nestLoop == loopMax) && (testUseless))
+        if((nestLoop == loopMax) && (testReach))
         {
             cout << "LHS rule forcibly broken" << endl;
         }
-        else if(testUseless && noChanges)
+        else if(testReach && noChanges)
         {
             cout << "No changes made. Exiting loop." << endl;
         }
-        else if(testUseless)
+        else if(testReach)
         {
             cout << "Changes made. Restarting loop." << endl;
         }
     }
 
 
-    if((loopBreak == loopMax) && testUseless)
+    if((loopBreak == loopMax) && testReach)
         cout << "\nWhile loop forcibly broken" << endl;
-    else if(testUseless)
+    else if(testReach)
     {
         cout << "\nReachable symbols found. Exiting function." << endl;
     }
@@ -623,13 +630,55 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
     return reachU;
 }
 
-vector<bool> findUseless(vector<vector<int> > ruleInts)
+vector< vector<Token> > findUseless(vector<vector<int> > ruleInts)
 {
+    if(testReach)
+    {
+        cout << "\nTesting findUseless"  << endl;
+    }
+    vector <vector<Token> > newRules;
+
     vector<bool> genSyms = findGenerating(ruleInts);
-    findReachable(ruleInts, genSyms);
+    vector<bool> reachSyms = findReachable(ruleInts, genSyms);
+    vector<bool> usableSyms(universe.size());
+    fill(usableSyms.begin(), usableSyms.end(), false);
+    int size = (int)genSyms.size();
+    if(testReach)
+    {
+        if(size != reachSyms.size())
+            cout << "\nSomething got fucked up!\n" << endl;
+    }
 
-    return genSyms;
+    for(int i = 0; ((i < size) && (loopBreak < loopMax)) ||
+        ((i < size) && (!testUseless)); i++, loopBreak++)
+    {
+        if(testReach)
+        {
+            cout << "Testing symbol " << i << ": "
+                 << universe[i].lexeme << endl;
+        }
+        if((genSyms[i] == reachSyms[i]) && testUseless)
+        {
+            cout << universe[i].lexeme << " is not useless" << endl;
+            usableSyms[i] = true;
+        }
+        else if(testReach)
+        {
+            cout << universe[i].lexeme << " is useless." << endl;
+        }
+    }
 
+    if(testReach)
+    {
+        print_set(usableSyms);
+    }
+
+    if(testReach)
+    {
+        cout << "\nDone testing FindUseless\n" << endl;
+    }
+
+    return newRules;
 }
 
 /*****************
@@ -953,6 +1002,7 @@ int main (int argc, char* argv[])
     //Case 2
     vector<bool> genU;
     vector< vector<int> > ruleInts;
+    vector< vector<Token> > newRules;
     //Case 3
     //Case 4
     //Case 5
@@ -971,9 +1021,8 @@ int main (int argc, char* argv[])
             if(test2)
                 cout << "\nStarting Task 2" << endl;
             ruleInts = labelRules();
-            genU = findUseless(ruleInts);
+            newRules = findUseless(ruleInts);
             print_set(genU);
-
             if(test2)
                 cout << "\nTask 2 Complete" << endl;
             break;
