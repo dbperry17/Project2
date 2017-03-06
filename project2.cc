@@ -100,6 +100,7 @@ vector<Token> nonTerms;
 vector< vector<Token> > ruleList;
 vector< vector<Token> > RHS_List;
 vector< vector<Token> > LHS_List;
+vector < vector<int> > ruleInts;
 
 vector<Token> universe;
 vector<Token> universeFF; //FIRST & FOLLOW universe
@@ -108,9 +109,13 @@ vector<Token>::iterator iter;
 vector<Token>::iterator iterNest;
 vector< vector<Token> >::iterator vecTokIter;
 
-/************************
- * CODE FROM POWERPOINT *
- ************************/
+/************************************************
+ * 				CODE FROM POWERPOINT 			*
+ * 												*
+ * Functions:									*
+ * 		bool is_element(vector<bool> S, int i)	*
+ * 		void print_set(vector<bool> S)			*
+ ************************************************/
 //From powerpoint
 bool is_element(vector<bool> S, int i)
 {
@@ -149,13 +154,13 @@ void print_set(vector<bool> S)
         cout << "done printing" << endl;
 }
 
-/**********************************************
- * 					TASK 1:					  *
- * Find number of productions for each symbol *
- * 											  *
- * Functions:								  *
- * 		string ruleCounter() 				  *
- **********************************************/
+/************************************************
+ * 					 TASK 1:					*
+ *  Find number of productions for each symbol	*
+ * 												*
+ * Functions:									*
+ * 		string ruleCounter() 					*
+ ************************************************/
 string ruleCounter()
 {
 	string output = "";
@@ -214,14 +219,11 @@ string ruleCounter()
  * 		string singRuleString(vector<int> singRule)						*
  * 		void printRules(vector<string> rules)							*
  * 		vector< vector<int> > labelRules()								*
- * 		vector<string> rulesAsString(vector < vector<int> > ruleInts,	*
- * 									 vector<bool> validRule)			*
- * 		vector<bool> findGenerating(vector < vector<int> > ruleInts)	*
- * 		vector<bool> findReachable(vector < vector<int> > ruleInts,		*
- * 								   vector<bool> genSyms)				*
- * 		vector<bool> findUsableSyms(vector<vector<int> > ruleInts)		*
- * 		vector<bool> findUsableRules(vector< vector<int> > ruleInts,	*
- * 									 vector<bool> usableSyms)			*
+ * 		vector<string> rulesAsString(vector<bool> validRule)			*
+ * 		vector<bool> findGenerating()									*
+ * 		vector<bool> findReachable(vector<bool> genSyms)				*
+ * 		vector<bool> findUsableSyms()									*
+ * 		vector<bool> findUsableRules(vector<bool> usableSyms)			*
  *																		*
  ************************************************************************/
 string singRuleString(vector<int> singRule)
@@ -383,7 +385,7 @@ vector< vector<int> > labelRules()
  * }
  * return grammar;
  */
-vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> validRule)
+vector<string> rulesAsString(vector<bool> validRule)
 {
     if(testRuleStr)
     {
@@ -450,7 +452,7 @@ vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> valid
  *              generating = false
  *      universe[variable] = generating
  */
-vector<bool> findGenerating(vector < vector<int> > ruleInts)
+vector<bool> findGenerating()
 {
     if(testGenerating)
     {
@@ -673,7 +675,7 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
  *
  * return reachU
  */
-vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms)
+vector<bool> findReachable(vector<bool> genSyms)
 {
     if(testReach)
     {
@@ -818,8 +820,8 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
  * Pseudocode:
  *
  *  vector<bool> newRules;
- *  vector<bool> genSyms = findGenerating(ruleInts);
- *  vector<bool> reachSyms = findReachable(ruleInts, genSyms);
+ *  vector<bool> genSyms = findGenerating();
+ *  vector<bool> reachSyms = findReachable(genSyms);
  *  vector<bool> usableSyms(universe_size);
  *  fill(usableSyms.begin(), usableSyms.end(), false);
  *
@@ -829,15 +831,15 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
  *
  *  return reachSyms
  */
-vector<bool> findUsableSyms(vector<vector<int> > ruleInts)
+vector<bool> findUsableSyms()
 {
     if(testUseSyms)
     {
         cout << "\nTesting findUsableSyms" << endl;
     }
 
-    vector<bool> genSyms = findGenerating(ruleInts);
-    vector<bool> reachSyms = findReachable(ruleInts, genSyms);
+    vector<bool> genSyms = findGenerating();
+    vector<bool> reachSyms = findReachable(genSyms);
     vector<bool> usableSyms(universe_size);
     fill(usableSyms.begin(), usableSyms.end(), false);
 
@@ -869,7 +871,7 @@ vector<bool> findUsableSyms(vector<vector<int> > ruleInts)
  *      if(allUsed)
  *          newRules[i] = true;
  */
-vector<bool> findUsableRules(vector< vector<int> > ruleInts, vector<bool> usableSyms)
+vector<bool> findUsableRules(vector<bool> usableSyms)
 {
     if(testUseRules)
     {
@@ -912,18 +914,22 @@ vector<bool> findUsableRules(vector< vector<int> > ruleInts, vector<bool> usable
     return newRules;
 }
 
-/**********
- * TASK 3
- * Calculate FIRST Sets
+/*******************************************
+ * 					TASK 3
+ * 			Calculate FIRST Sets
  *
  * Functions:
  * 		vector< vector<int> > firstSets()
- **********/
+ ******************************************/
 
-vector< vector<int> > firstSets()
+vector< vector<int> > findFirstSets()
 {
+	vector < vector<int> > firstSets;
 
+	return firstSets;
 }
+
+
 
 
 /**********
@@ -1137,8 +1143,8 @@ int main (int argc, char* argv[])
 	loopBreak = 0;
 
 	//Originally a vector for task 2, but seems useful for the others,
-	//so moved up to task 0 to do every time
-	vector< vector<int> > ruleInts = labelRules();
+	//so made global variable and moved up to task 0 to do every time
+	ruleInts = labelRules();
 
     /******************************************
      *                TESTING                 *
@@ -1243,6 +1249,7 @@ int main (int argc, char* argv[])
     vector<bool> newRules;
     vector<string> ruleStrings;
     //Case 3
+	vector< vector<int> > firstSets;
     //Case 4
     //Case 5
     if(testing)
@@ -1256,15 +1263,16 @@ int main (int argc, char* argv[])
 
         case 2:
             //Task 2: Find Useless Symbols
-            usableSyms = findUsableSyms(ruleInts);
-            newRules = findUsableRules(ruleInts, usableSyms);
-            ruleStrings = rulesAsString(ruleInts, newRules);
+            usableSyms = findUsableSyms();
+            newRules = findUsableRules(usableSyms);
+            ruleStrings = rulesAsString(newRules);
             printRules(ruleStrings);
             break;
 
         case 3:
             // TODO: perform task 3.
             //Task 3: Calculate FIRST Sets
+			firstSets = findFirstSets();
 			break;
 
         case 4:
