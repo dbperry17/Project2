@@ -15,26 +15,80 @@ using namespace std;
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
 const int loopMax = 10; //In case I need to change loop iterations
-bool testing = false; //to avoid having to comment things out
-bool testInput = false;
-bool testRules = true;
-bool test0 = false;
-bool test1 = true;
-bool test2 = true;
-bool test3 = true;
-bool test4 = true;
-bool test5 = true;
-bool testElement = false;
-bool testPrint = false;
-bool testGenerating = false;
-bool testLabel = false;
-bool testReach = true;
-bool testUseSyms = true;
-bool testUseRules = true;
-bool testRuleStr = true;
-bool testRulePrint = true;
-bool testSingRuleStr = false;
+bool testing = true; //to avoid having to comment things out
+bool testInput;
+bool testRules;
+bool test0;
+bool test1;
+bool test2;
+bool test3;
+bool test4;
+bool test5;
+bool testElement;
+bool testPrint;
+bool testGenerating;
+bool testLabel;
+bool testReach;
+bool testUseSyms;
+bool testUseRules;
+bool testRuleStr;
+bool testRulePrint;
+bool testSingRuleStr;
 
+/**
+ * Created so that I don't have to change all testing booleans individually when
+ * I'm completely done with testing.
+ *
+ * I know it's probably bad coding style to have a function before I'm done declaring
+ * variables, but I don't care. I want all this testing stuff together so that I don't
+ * have to scroll or CTRL+F my way through the file
+ */
+void myTests(bool test)
+{
+	if(test)
+	{
+		cout << "\nSTARTING PROGRAM" << endl;
+		testInput = false;
+		testRules = true;
+		test0 = false;
+		test1 = false;
+		test2 = false;
+		test3 = true;
+		test4 = true;
+		test5 = true;
+		testElement = false;
+		testPrint = false;
+		testGenerating = false;
+		testLabel = false;
+		testReach = false;
+		testUseSyms = false;
+		testUseRules = false;
+		testRuleStr = false;
+		testRulePrint = false;
+		testSingRuleStr = false;
+	}
+	else
+	{
+		testInput = false;
+		testRules = false;
+		test0 = false;
+		test1 = false;
+		test2 = false;
+		test3 = false;
+		test4 = false;
+		test5 = false;
+		testElement = false;
+		testPrint = false;
+		testGenerating = false;
+		testLabel = false;
+		testReach = false;
+		testUseSyms = false;
+		testUseRules = false;
+		testRuleStr = false;
+		testRulePrint = false;
+		testSingRuleStr = false;
+	}
+}
 
 //non-testing variables
 int universe_size = 0;
@@ -157,7 +211,6 @@ void printRules(vector<string> rules)
     }
 }
 
-//Default function
 vector< vector<int> > labelRules()
 {
     if(testLabel)
@@ -278,69 +331,6 @@ string ruleCounter()
     return output;
 }
 
-//Alternate ruleCounter function
-/**
- * bitvector marking rule numbers for LHSs
- * bitVector marking rule numbers for RHSs
- *
- * return bitvector<vector> containing LHS and RHS bitvectors
- * task 1: print size of each vector
- *
- * Idea: use bitVector???
- */
-/*
-vector <vector< vector<int> > > ruleCount()
-{
-    //ruleNum starts at 0 because I don't feel like dealing with off-by-one errors later
-    int ruleNum = -1;
-    vector< vector<int> > ruleLHS; //2D vector purely for storage purposes
-    vector< vector<int> > ruleRHS;
-    vector< vector< vector<int> > > ruleCounter;
-
-
-    //Look at each element in universe
-    for(iter = universe.begin(); iter != universe.end(); ++iter)
-    {
-        ruleNum = -1;
-        vector<int> singRHS;
-        //Look at each rule (vecTokIter)
-        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter, ruleNum++)
-        {
-            ruleNum++;
-
-            //For rules that go to epsilon
-            if((vecTokIter->size() == 2) && (iter == universe.begin()))
-            {
-                singRHS.push_back(ruleNum);
-            }
-            else
-            {
-                //Look at each token (iterNest) in each rule (vecTokIter)
-                for (iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-                {
-                    //if current token (iterNest) in current rule (vecTokIter)
-                    // matches current element in universe (iter)
-                    if (iterNest->lexeme == iter->lexeme)
-                    {
-                        //If first element (iterNest) in rule (vecTokIter), add to LHS
-                        if (iterNest == vecTokIter->begin())
-                            ruleLHS.push_back(ruleNum);
-                        //else if element not already on RHS
-                        else if(!(find(singRHS.begin(), singRHS.end(), ruleNum) != singRHS.end()))
-                            singRHS.push_back(ruleNum);
-                    }
-                }
-            }
-        }
-        ruleRHS.push_back(singRHS);
-    }
-
-    ruleCounter.push_back(ruleLHS);
-    ruleCounter.push_back(ruleRHS);
-
-    return ruleCounter;
-}
-*/
 
 /*
  * Pseudocode:
@@ -365,39 +355,6 @@ vector <vector< vector<int> > > ruleCount()
  * }
  * return grammar;
  */
-
-//default method
-vector<string> rulesAsString(vector < vector<int> > ruleInts)
-{
-    vector<string> grammar;
-    string ruleStr;
-
-    //for each rule in rulesInts
-    for(int i = 0; i < maxRules; i++)
-    {
-        vector<int> singRule = ruleInts[i];
-        int singRuleSize = (int)singRule.size();
-        ruleStr = universe[singRule[0]].lexeme;
-        ruleStr += " -> ";
-        //if rule goes to epsilon
-        if(singRuleSize == 2)
-            ruleStr += "#";
-        //else rule doesn't go to epsilon
-        else
-            //for each item in RHS in each rule
-            //j = 1 because j = 0 is LHS
-            for(int j = 1; j < singRuleSize; j++)
-            {
-                ruleStr += universe[singRule[j]].lexeme;
-                if(j != singRuleSize - 1)
-                    ruleStr += " ";
-            }
-        grammar.push_back(ruleStr);
-    }
-    return grammar;
-}
-
-//For filtered rules
 vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> validRule)
 {
     if(testRuleStr)
@@ -465,7 +422,6 @@ vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> valid
  *              generating = false
  *      universe[variable] = generating
  */
-
 vector<bool> findGenerating(vector < vector<int> > ruleInts)
 {
     if(testGenerating)
@@ -664,6 +620,7 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
 
     return genU;
 }
+
 
 /*
  * Pseudocode:
@@ -884,7 +841,6 @@ vector<bool> findUsableSyms(vector<vector<int> > ruleInts)
  *      if(allUsed)
  *          newRules[i] = true;
  */
-
 vector<bool> findUsableRules(vector< vector<int> > ruleInts, vector<bool> usableSyms)
 {
     if(testUseRules)
@@ -937,30 +893,7 @@ int main (int argc, char* argv[])
     /***********************
      * INITIALIZING THINGS *
      ***********************/
-    if(testing)
-        cout << "\nSTARTING PROGRAM" << endl;
-    else
-    {
-        //so that I don't have to change them all individually when I'm completely done with testing
-        testInput = false;
-        testRules = false;
-        test0 = false;
-        test1 = false;
-        test2 = false;
-        test3 = false;
-        test4 = false;
-        test5 = false;
-        testElement = false;
-        testPrint = false;
-        testGenerating = false;
-        testLabel = false;
-        testReach = false;
-        testUseSyms = false;
-        testUseRules = false;
-        testRuleStr = false;
-        testRulePrint = false;
-		testSingRuleStr = false;
-    }
+    myTests(testing);
 
     // NOTE: Below it teacher's code. Do not touch.
     int task;
@@ -1285,7 +1218,6 @@ int main (int argc, char* argv[])
         case 4:
             // TODO: perform task 4.
             //Task 4: Calculate FOLLOW Sets
-            if(test4)
             break;
 
         case 5:
