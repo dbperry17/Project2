@@ -15,7 +15,7 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 10; //In case I need to change loop iterations
+const int loopMax = 1; //In case I need to change loop iterations
 bool testing = true; //to avoid having to comment things out
 bool testInput;
 bool testRules;
@@ -1076,11 +1076,89 @@ vector< vector<bool> > findFirstSets()
 			//IV.	If A goes to more than one thing, and the first i things
 			// 		contain ε in their FIRST sets, then add the FIRST set of the
 			// 		(i+1)th thing to A.
+			/*
+			 *
+			 * bool emptyFirst
+			 * bool hasHash
+			 * int elements = 0;
+			 * If A is not empty
+			 * 		if A goes to non-Terminal
+			 * 			//for each token in singRule A
+			 * 			for(int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
+			 * 			{
+			 *		 		firstOfToken = singRule[TokenPos]
+			 * 				//if frontmost token is not empty
+			 * 				if(firstOfToken is not empty)
+			 * 				{
+			 * 					//if frontMost token has a hash in its FIRST
+			 * 					if(firstOfToken hasHash)
+			 * 					{
+			 * 						//Rule V
+			 * 						if next token does not exist
+			 * 							firstA[0] = true; //add # to firstA
+			 * 						else //rule IV
+			 * 							add nextToken's first set to firstA
+			 * 					}
+			 * 					else	//frontMost does not have hash
+			 * 					{
+			 * 						add firstOfToken to firstA
+			 * 					}
+			 * 				}
+			 * 				else
+			 * 					break;	//break forLoop; examine no other tokens because
+			 * 							//frontmost is empty
+			 * 			}
+			 *
+			 */
+
+			bool emptyFirst;
+			bool hasHash;
+			int elements = 0;
+			elements = (int)count(firstA.begin(), firstA.end(), true);
+			//If A is not empty
+			if(elements != 0)
+			{
+				//for each token in singRule A
+				for (int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
+				{
+					//if A goes to non-Terminal
+					if ()
+					{
+						firstOfToken = singRule[TokenPos]
+						//if frontmost token is not empty
+						if (firstOfToken is not empty)
+						{
+							//if frontMost token has a hash in its FIRST
+							if (firstOfToken hasHash)
+							{
+								//Rule V
+								if ()// next token does not exist
+									firstA[0] = true; //add # to firstA
+								else //rule IV
+								//add nextToken's first set to firstA
+							}
+							else    //frontMost does not have hash
+							{
+								//add firstOfToken to firstA
+							}
+						}
+						else
+						break;	//break forLoop; examine no other tokens because
+						//frontmost is empty
+					}
+
+				}
+
+			}
+
+			/*
 			bool reachedNonHash = false;
 			//for each token k of rule j
 			//start at 1 because k = 0 is LHS
 			for (int k = 1; k < singRuleSize; k++)
 			{
+
+				/*
 				firstB = firstSets[singRule[k]];
 				vector<bool> firstA_k;
 				if(testFirst)
@@ -1113,6 +1191,8 @@ vector< vector<bool> > findFirstSets()
 							for (int l = 2; l < firstUniSize; l++)
 								if (is_element(firstA_k, l))
 									firstA[l] = true;
+						else if(elements == 0)
+									break;
 					}
 				}
 
@@ -1125,6 +1205,7 @@ vector< vector<bool> > findFirstSets()
 				}
 				 */
 
+				/*
 				if(testFirst)
 				{
 					cout << "Applying Rule 4 - b02" << endl;
@@ -1142,6 +1223,7 @@ vector< vector<bool> > findFirstSets()
 				}
 				 */
 
+				/*
 				//if FIRST(k) doesn't contain # && !reachedNonHash
 				int elements = (int)count(firstB.begin(), firstB.end(), true);
 				if (!(is_element(firstB, 0) || reachedNonHash || (elements != 0)))
@@ -1178,6 +1260,7 @@ vector< vector<bool> > findFirstSets()
 						cout << "Applying Rule 5 - b" << endl;
 					firstA[0] = true;
 				}
+			*/
 			}
 
 			firstSets[ruleLHS] = firstA;
