@@ -15,7 +15,7 @@ using namespace std;
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
 const int loopMax = 10; //In case I need to change loop iterations
-bool testing = false; //to avoid having to comment things out
+bool testing = true; //to avoid having to comment things out
 bool testInput;
 bool testRules;
 bool test0;
@@ -1084,7 +1084,7 @@ vector< vector<bool> > findFirstSets()
 				vector<bool> firstA_k;
 				if(testFirst)
 				{
-					cout << "\nStarting loop #" << k << endl;
+					cout << "\nStarting outer loop #" << k << endl;
 					cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
 					print_set(firstB);
 					cout << "}" << endl;
@@ -1097,7 +1097,7 @@ vector< vector<bool> > findFirstSets()
 						firstA_k = firstSets[singRule[k + 1]];
 						if(testFirst)
 						{
-							cout << "\nStarting loop #" << k << endl;
+							cout << "\nStarting inner loop #" << k << endl;
 							cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
 							print_set(firstB);
 							cout << "}" << endl;
@@ -1106,13 +1106,15 @@ vector< vector<bool> > findFirstSets()
 							cout << "}" << endl;
 						}
 						//add FIRST(A_k) to FIRST(B)
-						for (int l = 2; l < firstUniSize; l++)
-							if (is_element(firstA_k, l))
-								firstA[l] = true;
+						//UNLESS A = B!!!
+						if(singRule[0] != singRule[k])
+							for (int l = 2; l < firstUniSize; l++)
+								if (is_element(firstA_k, l))
+									firstA[l] = true;
 					}
 				}
 
-				
+
 				/*
 				for (int l = 2; l < firstUniSize; l++)
 				{
