@@ -1026,7 +1026,7 @@ vector< vector<bool> > findFirstSets()
 					//IV.	If A goes to more than one thing, and the first i things
 					// 		contain ε in their FIRST sets, then add the FIRST set of the
 					// 		(i+1)th thing to A.
-					
+
 
 
 					//V.	If everything that A goes to contains ε, then add ε to
