@@ -14,7 +14,7 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 5; //In case I need to change loop iterations
+const int loopMax = 1; //In case I need to change loop iterations
 bool testing = true; //to avoid having to comment things out
 bool testInput;
 bool testRules;
@@ -1051,6 +1051,12 @@ vector< vector<bool> > findFirstSets()
 				for (int k = 2; k < firstUniSize; k++)
 					if (is_element(firstB, k))
 						firstA[k] = true;
+				if(testFirst)
+				{
+					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+					print_set(firstA);
+					cout << "}" << endl;
+				}
 			}
 
 			if(singRuleSize == 1)
@@ -1075,16 +1081,70 @@ vector< vector<bool> > findFirstSets()
 			for (int k = 1; k < singRuleSize; k++)
 			{
 				firstB = firstSets[singRule[k]];
+				vector<bool> firstA_k;
+				if(is_element(firstB, 0)) //if # is token in firstB
+				{
+					if ((k + 1) != singRuleSize) //check next token in rule
+					{
+						cout << "Applying Rule 4 - a" << endl;
+						firstA_k = firstSets[singRule[k + 1]];
+						//add FIRST(A_k) to FIRST(B)
+						for (int l = 2; l < firstUniSize; l++)
+							if (is_element(firstA_k, l))
+								firstB[l] = true;
+					}
+				}
+
+				if(testFirst)
+				{
+					cout << "Applying Rule 4 - b01" << endl;
+					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+					print_set(firstA);
+					cout << "}" << endl;
+				}
+
+				for (int l = 2; l < firstUniSize; l++)
+					if (is_element(firstB, l))
+						firstA[l] = true;
+
+				if(testFirst)
+				{
+					cout << "Applying Rule 4 - b02" << endl;
+					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+					print_set(firstA);
+					cout << "}" << endl;
+				}
+
+				/*
+				if(testFirst && (j = 5) )
+				{
+					cout << "firstB = ";
+					print_set(firstB);
+					cout << endl;
+				}
+				 */
+
 				//if FIRST(k) doesn't contain # && !reachedNonHash
 				if (!(is_element(firstB, 0) || reachedNonHash))
 				{
 					if(testFirst)
-						cout << "Applying Rule 4" << endl;
+						cout << "Applying Rule 4 - b" << endl;
 					//add FIRST(k) to FIRST(A)
 					for (int l = 2; l < firstUniSize; l++)
+					{
 						if (is_element(firstB, l))
+						{
 							firstA[l] = true;
+						}
+					}
 					reachedNonHash = true;
+
+					if(testFirst)
+					{
+						cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+						print_set(firstA);
+						cout << "}" << endl;
+					}
 				}
 					//V.	If everything that A goes to contains ε, then add ε to
 					// 		FIRST(A).
