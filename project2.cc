@@ -936,7 +936,7 @@ vector< vector<bool> > findFirstSets()
 
 	//FIRST Sets initialization
 	//Setup
-	vector < vector<bool> > firstSets(universe_size);
+	vector < vector<bool> > firstSets;
 
 	//Set terminals and epsilon to True
 	for(int i = 0; i < universe_size; i++)
@@ -952,34 +952,7 @@ vector< vector<bool> > findFirstSets()
 			fill(firstUni.begin(), firstUni.end(), false);
 		}
 
-		if(testFirst)
-		{
-			cout << "Before pushing:" << endl;
-			string fst = "FIRST(";
-			cout << fst << universe[i].lexeme << ") = { ";
-			print_set(firstUni);
-			cout << "}" << endl;
-
-			cout << "Set:";
-			for(int j = 0; j < (int)firstUni.size(); j++)
-				cout << " " << firstUni[j];
-			cout << endl;
-		}
 		firstSets.push_back(firstUni);
-		if(testFirst)
-		{
-			vector<bool> singSet = firstSets[i];
-			cout << "After pushing:" << endl;
-			string fst = "FIRST(";
-			cout << fst << universe[i].lexeme << ") = { ";
-			print_set(singSet);
-			cout << "}" << endl;
-
-			cout << "Set:";
-			for(int j = 0; j < (int)firstUni.size(); j++)
-				cout << " " << singSet[j];
-			cout << "\n" << endl;
-		}
 	}
 
 	if(testFirst)
