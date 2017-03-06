@@ -1111,6 +1111,7 @@ vector< vector<bool> > findFirstSets()
 			 *
 			 */
 
+
 			bool emptyFirst;
 			bool hasHash;
 			int elements = 0;
@@ -1118,34 +1119,55 @@ vector< vector<bool> > findFirstSets()
 			//If A is not empty
 			if(elements != 0)
 			{
+				vector<bool> firstOfToken;
+				int tokenSym; //so universe[tokenSym].lexeme outputs proper lexeme
+
 				//for each token in singRule A
-				for (int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
+				for(int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
 				{
-					//if A goes to non-Terminal
-					if ()
+					tokenSym = singRule[tokenPos];
+					firstOfToken = firstSets[tokenSym];
+					//if current token is non-Terminal
+					if((tokenSym >= firstUniSize) && (tokenSym < universe_size))
 					{
-						firstOfToken = singRule[TokenPos]
 						//if frontmost token is not empty
-						if (firstOfToken is not empty)
+						elements = (int)count(firstOfToken.begin(), firstOfToken.end(), true);
+						if (elements != 0)
 						{
 							//if frontMost token has a hash in its FIRST
-							if (firstOfToken hasHash)
+							if (is_element(firstOfToken, 0))
 							{
 								//Rule V
-								if ()// next token does not exist
+								if ((tokenPos + 1) >= singRuleSize)	// next token does not exist
 									firstA[0] = true; //add # to firstA
-								else //rule IV
-								//add nextToken's first set to firstA
+								else	//rule IV
+									firstSets[singRule[tokenPos + 1]];
+									// TODO: not sure about last line
+									//add nextToken's first set to firstA
 							}
 							else    //frontMost does not have hash
 							{
 								//add firstOfToken to firstA
+								for (int k = 2; k < firstUniSize; k++)
+									if (is_element(firstOfToken, k))
+										firstA[k] = true;
 							}
 						}
 						else
-						break;	//break forLoop; examine no other tokens because
-						//frontmost is empty
+						{
+							break;	//break forLoop; examine no other tokens because
+									//frontmost is empty
+						}
 					}
+					else	//current token is terminal
+					{
+						//add firstOfToken to firstA
+						for (int k = 2; k < firstUniSize; k++)
+							if (is_element(firstOfToken, k))
+								firstA[k] = true;
+						break;
+					}
+
 
 				}
 
@@ -1261,7 +1283,8 @@ vector< vector<bool> > findFirstSets()
 					firstA[0] = true;
 				}
 			*/
-			}
+		/*	}
+
 
 			firstSets[ruleLHS] = firstA;
 
