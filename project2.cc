@@ -1071,6 +1071,7 @@ vector< vector<bool> > findFirstSets()
 					cout << "}" << endl;
 				}
 			}
+			
 
 			//IV.	If A goes to more than one thing, and the first i things
 			// 		contain ε in their FIRST sets, then add the FIRST set of the
