@@ -8,6 +8,7 @@
 #include "lexer.h"
 
 using namespace std;
+//Testing Visual studio
 
 /****************
  * My variables *
