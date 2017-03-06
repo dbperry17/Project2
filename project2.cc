@@ -927,22 +927,45 @@ vector<bool> findUsableRules(vector<bool> usableSyms)
  * 		vector< vector<int> > firstSets()
  ******************************************/
 
+/*
+ * I. FIRST(X) = {X} if X is a terminal
+ * II.  FIRST(ε) = {ε}.  Note that this is not covered by the first rule because ε is
+ * 		not a terminal.
+ * III. If A → Xα, then add FIRST(X) − {ε} to FIRST(A)
+ *	Translation:
+ *		If A goes to a variable first, add the FIRST of that variable (minus ε) to FIRST(A)
+ * IV. If A → A_1 A_2 A_3 ... A_iA_(i+1) ... A_k and
+ * ε ∈ FIRST(A_1) and ε ∈ FIRST(A_2) and ... and ε ∈ FIRST(A_i),
+ * then add FIRST(A_(i+1)) − {ε} to FIRST(A)
+ *	Translation:
+ *		If A goes to more than one thing, and the first i things contain ε in their
+ *		FIRST sets, then add the FIRST set of the (i+1)th thing to A.
+ * V. If A → A_1 A_2 A_3 ... A_k and
+ * ε ∈ FIRST(A_1) and ε ∈ FIRST(A_2) and ... and ε ∈ FIRST(A_k),
+ * then add ε to FIRST(A).
+ *	Translation:
+ *		If everything that A goes to contains ε, then add ε to FIRST(A).
+ */
 vector< vector<bool> > findFirstSets()
 {
-	if(testFirst)
+	if (testFirst)
 	{
 		cout << "\nStarting findFirstSets" << endl;
 	}
 
 	//FIRST Sets initialization
 	//Setup
-	vector < vector<bool> > firstSets;
+	vector<vector<bool> > firstSets;
+	int firstUniSize = (int) universeFF.size();
+	bool noChanges = false;
 
-	//Set terminals and epsilon to True
-	for(int i = 0; i < universe_size; i++)
+
+	//I. FIRST(X) = {X} if X is a terminal
+	//II.  FIRST(ε) = {ε}.
+	for (int i = 0; i < universe_size; i++)
 	{
-		vector<bool> firstUni(universeFF.size());
-		if(i != 1) //skip $
+		vector<bool> firstUni((unsigned long) firstUniSize);
+		if (i != 1) //skip $
 		{
 			fill(firstUni.begin(), firstUni.end(), false);
 			firstUni[i] = true;
@@ -955,11 +978,11 @@ vector< vector<bool> > findFirstSets()
 		firstSets.push_back(firstUni);
 	}
 
-	if(testFirst)
+	if (testFirst)
 	{
 		string fst = "FIRST(";
 		cout << "\nFIRST sets so far:" << endl;
-		for(int i = 0; i < universe_size; i++)
+		for (int i = 0; i < universe_size; i++)
 		{
 			cout << fst << universe[i].lexeme << ") = { ";
 			print_set(firstSets[i]);
@@ -968,21 +991,67 @@ vector< vector<bool> > findFirstSets()
 	}
 
 
+	while (!noChanges)
+	{
+		noChanges = true;
+		vector<bool> firstA;
+		vector<bool> changeCheck;
+		//for each non-terminal
+		for (int i = firstUniSize; i < universe_size; i++)
+		{
+			firstA = firstSets[i];
+			changeCheck = firstSets[i];
+			vector<int> singRule;
+			//for each rule
+			for (int j = 0; j < maxRules; j++)
+			{
+				singRule = ruleInts[j];
+				//Only bother with rules with current non-Terminal on LHS
+				if(singRule[0] == i)
+				{
+					int singRuleSize = singRule.size();
+					//III.	If A goes to a variable B first, add the FIRST(B) (minus ε)
+					// 		to FIRST(A)
+					if ((singRule[1] >= firstUniSize) && (singRule[0] < maxRules))
+					{
+						vector<bool> firstB = firstSets[singRule[1]];
+						//for each member k of FIRST(B) (starting from 2)
+						//if k = true, then FIRST(A)[k] = true
+						for (int k = 2; k < firstUniSize; k++)
+							if (is_element(firstB, k))
+								firstA[k] = true;
+					}
 
-	if(testFirst)
+
+					//IV.	If A goes to more than one thing, and the first i things
+					// 		contain ε in their FIRST sets, then add the FIRST set of the
+					// 		(i+1)th thing to A.
+					
+
+
+					//V.	If everything that A goes to contains ε, then add ε to
+					// 		FIRST(A).
+				}
+			}
+
+			for (int j = firstUniSize; j < universe_size; j++)
+				if (is_element(firstA, j) == is_element(changeCheck, j))
+					noChanges = false;
+		}
+	}
+
+	if (testFirst)
 	{
 		cout << "" << endl;
 	}
 
 
-	if(testFirst)
-	{
+	if (testFirst)
 		cout << "\nDone with findFirstSets\n" << endl;
-	}
+
 
 	return firstSets;
 }
-
 
 
 
@@ -1102,7 +1171,7 @@ int main (int argc, char* argv[])
     nonTermStr.pop_back(); //delete comma
     nonTermStr += "}";
 
-    universe_size = (int)universe.size();
+    universe_size = universe.size();
     //TESTING
     if(testInput)
         if((loopBreak == loopMax) && (token.token_type != HASH))
@@ -1304,6 +1373,7 @@ int main (int argc, char* argv[])
     vector<string> ruleStrings;
     //Case 3
 	vector< vector<bool> > firstSets;
+	int uniFF_Size = universeFF.size();
     //Case 4
     //Case 5
     if(testing)
@@ -1327,6 +1397,13 @@ int main (int argc, char* argv[])
             // TODO: perform task 3.
             //Task 3: Calculate FIRST Sets
 			firstSets = findFirstSets();
+			for(int i = uniFF_Size; i < universe_size; i++)
+			{
+				cout << "FIRST(" << universe[i].lexeme << ") = { ";
+				print_set(firstSets[i]);
+				cout << "}" << endl;
+			}
+
 			break;
 
         case 4:
