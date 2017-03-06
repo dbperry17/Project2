@@ -108,6 +108,9 @@ vector<Token>::iterator iter;
 vector<Token>::iterator iterNest;
 vector< vector<Token> >::iterator vecTokIter;
 
+/************************
+ * CODE FROM POWERPOINT *
+ ************************/
 //From powerpoint
 bool is_element(vector<bool> S, int i)
 {
@@ -146,6 +149,81 @@ void print_set(vector<bool> S)
         cout << "done printing" << endl;
 }
 
+/**********************************************
+ * 					TASK 1:					  *
+ * Find number of productions for each symbol *
+ * 											  *
+ * Functions:								  *
+ * 		string ruleCounter() 				  *
+ **********************************************/
+string ruleCounter()
+{
+	string output = "";
+	bool counted = false;
+	int useCount = 0;
+	int ruleNum = -1;
+	int uniPos = 1;
+	vector< vector<int> > rulePos;
+
+
+	//Look at each item in universe
+	for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
+	{
+		uniPos++;
+		//Look at each rule (vecTokIter)
+		for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
+		{
+			ruleNum++;
+			vector<int> lPos;
+			//Look at each token (iterNest) in each rule (vecTokIter)
+			for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
+			{
+				//if current token (iterNest) in current rule (vecTokIter) matches current token in universe (iter)
+				if(iterNest->lexeme == iter->lexeme)
+				{
+					//counting # of rules it appears in, not # of times it appears
+					if(!counted)
+					{
+						useCount++;
+						counted = true;
+					}
+
+					//add the universe position to the rules
+					lPos.push_back(uniPos);
+				}
+
+			}
+			counted = false;
+		}
+
+		output += iter->lexeme;
+		output += ": ";
+		output += to_string(useCount);
+		output += "\n";
+		useCount = 0;
+	}
+
+	return output;
+}
+
+/************************************************************************
+ * 								TASK 2:									*
+ * 						  Find Useless Symbols							*
+ * 																		*
+ * Functions:															*
+ * 		string singRuleString(vector<int> singRule)						*
+ * 		void printRules(vector<string> rules)							*
+ * 		vector< vector<int> > labelRules()								*
+ * 		vector<string> rulesAsString(vector < vector<int> > ruleInts,	*
+ * 									 vector<bool> validRule)			*
+ * 		vector<bool> findGenerating(vector < vector<int> > ruleInts)	*
+ * 		vector<bool> findReachable(vector < vector<int> > ruleInts,		*
+ * 								   vector<bool> genSyms)				*
+ * 		vector<bool> findUsableSyms(vector<vector<int> > ruleInts)		*
+ * 		vector<bool> findUsableRules(vector< vector<int> > ruleInts,	*
+ * 									 vector<bool> usableSyms)			*
+ *																		*
+ ************************************************************************/
 string singRuleString(vector<int> singRule)
 {
 	if(testSingRuleStr)
@@ -281,56 +359,6 @@ vector< vector<int> > labelRules()
 
 }
 
-string ruleCounter()
-{
-    string output = "";
-    bool counted = false;
-    int useCount = 0;
-    int ruleNum = -1;
-    int uniPos = 1;
-    vector< vector<int> > rulePos;
-
-
-    //Look at each item in universe
-    for(iter = universe.begin() + 2; iter != universe.end(); ++iter)
-    {
-        uniPos++;
-        //Look at each rule (vecTokIter)
-        for(vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-        {
-            ruleNum++;
-            vector<int> lPos;
-            //Look at each token (iterNest) in each rule (vecTokIter)
-            for(iterNest = vecTokIter->begin(); iterNest != vecTokIter->end(); ++iterNest)
-            {
-                //if current token (iterNest) in current rule (vecTokIter) matches current token in universe (iter)
-                if(iterNest->lexeme == iter->lexeme)
-                {
-                    //counting # of rules it appears in, not # of times it appears
-                    if(!counted)
-                    {
-                        useCount++;
-                        counted = true;
-                    }
-
-                    //add the universe position to the rules
-                    lPos.push_back(uniPos);
-                }
-
-            }
-            counted = false;
-        }
-
-        output += iter->lexeme;
-        output += ": ";
-        output += to_string(useCount);
-        output += "\n";
-        useCount = 0;
-    }
-
-    return output;
-}
-
 
 /*
  * Pseudocode:
@@ -394,7 +422,7 @@ vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> valid
     if(testRuleStr)
     {
 		cout << "Final result: " << endl;
-		for(int i = 0; i < grammar.size(); i++)
+		for(int i = 0; i < (int)grammar.size(); i++)
 		{
 			cout << grammar[i] << endl;
 		}
@@ -884,6 +912,28 @@ vector<bool> findUsableRules(vector< vector<int> > ruleInts, vector<bool> usable
     return newRules;
 }
 
+/**********
+ * TASK 3
+ * Calculate FIRST Sets
+ *
+ * Functions:
+ * 		vector< vector<int> > firstSets()
+ **********/
+
+vector< vector<int> > firstSets()
+{
+
+}
+
+
+/**********
+ * TASK 4 *
+ **********/
+
+/**********
+ * TASK 5 *
+ **********/
+
 /*****************
  * MAIN FUNCTION *
  *****************/
@@ -912,7 +962,6 @@ int main (int argc, char* argv[])
 
     task = atoi(argv[1]);
     //NOTE: Above is teacher's code; do not touch
-
 
     /******************************************
      * Task 0: Reading and categorizing input *
@@ -1085,7 +1134,11 @@ int main (int argc, char* argv[])
         else
             cout << "Rules successfully gotten" << endl;
     }
-    loopBreak = 0;
+	loopBreak = 0;
+
+	//Originally a vector for task 2, but seems useful for the others,
+	//so moved up to task 0 to do every time
+	vector< vector<int> > ruleInts = labelRules();
 
     /******************************************
      *                TESTING                 *
@@ -1184,26 +1237,25 @@ int main (int argc, char* argv[])
 
     //Variables declared for switch cases:
     //Case 1
-    //vector< vector< vector<int> > > ruleCounter;
+    //None
     //Case 2
     vector<bool> usableSyms;
     vector<bool> newRules;
-    vector< vector<int> > ruleInts;
     vector<string> ruleStrings;
     //Case 3
     //Case 4
     //Case 5
     if(testing)
-        cout << "\nStarting task #" << task << endl;
+		if((task > 0) && (task < 6))
+	        cout << "\nStarting task #" << task << endl;
 
     switch (task) {
         case 1:
             cout << ruleCounter() << endl;
             break;
+
         case 2:
-            // TODO: perform task 2.
             //Task 2: Find Useless Symbols
-            ruleInts = labelRules();
             usableSyms = findUsableSyms(ruleInts);
             newRules = findUsableRules(ruleInts, usableSyms);
             ruleStrings = rulesAsString(ruleInts, newRules);
@@ -1213,7 +1265,7 @@ int main (int argc, char* argv[])
         case 3:
             // TODO: perform task 3.
             //Task 3: Calculate FIRST Sets
-            break;
+			break;
 
         case 4:
             // TODO: perform task 4.
