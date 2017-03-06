@@ -34,6 +34,10 @@ bool testUseRules;
 bool testRuleStr;
 bool testRulePrint;
 bool testSingRuleStr;
+bool testFirst;
+
+
+
 
 /**
  * Created so that I don't have to change all testing booleans individually when
@@ -66,6 +70,7 @@ void myTests(bool test)
 		testRuleStr = false;
 		testRulePrint = false;
 		testSingRuleStr = false;
+		testFirst = true;
 	}
 	else
 	{
@@ -87,6 +92,7 @@ void myTests(bool test)
 		testRuleStr = false;
 		testRulePrint = false;
 		testSingRuleStr = false;
+		testFirst = false;
 	}
 }
 
@@ -149,7 +155,6 @@ void print_set(vector<bool> S)
     for(int i = 0; i < max; i++)
         if(is_element(S, i))
             cout << universe.at(i).lexeme << " ";
-    cout << "" << endl;
     if(testPrint)
         cout << "done printing" << endl;
 }
@@ -922,9 +927,85 @@ vector<bool> findUsableRules(vector<bool> usableSyms)
  * 		vector< vector<int> > firstSets()
  ******************************************/
 
-vector< vector<int> > findFirstSets()
+vector< vector<bool> > findFirstSets()
 {
-	vector < vector<int> > firstSets;
+	if(testFirst)
+	{
+		cout << "\nStarting findFirstSets" << endl;
+	}
+
+	//FIRST Sets initialization
+	//Setup
+	vector < vector<bool> > firstSets(universe_size);
+
+	//Set terminals and epsilon to True
+	for(int i = 0; i < universe_size; i++)
+	{
+		vector<bool> firstUni(universeFF.size());
+		if(i != 1) //skip $
+		{
+			fill(firstUni.begin(), firstUni.end(), false);
+			firstUni[i] = true;
+		}
+		else //Set all of $'s first set to false
+		{
+			fill(firstUni.begin(), firstUni.end(), false);
+		}
+
+		if(testFirst)
+		{
+			cout << "Before pushing:" << endl;
+			string fst = "FIRST(";
+			cout << fst << universe[i].lexeme << ") = { ";
+			print_set(firstUni);
+			cout << "}" << endl;
+
+			cout << "Set:";
+			for(int j = 0; j < (int)firstUni.size(); j++)
+				cout << " " << firstUni[j];
+			cout << endl;
+		}
+		firstSets.push_back(firstUni);
+		if(testFirst)
+		{
+			vector<bool> singSet = firstSets[i];
+			cout << "After pushing:" << endl;
+			string fst = "FIRST(";
+			cout << fst << universe[i].lexeme << ") = { ";
+			print_set(singSet);
+			cout << "}" << endl;
+
+			cout << "Set:";
+			for(int j = 0; j < (int)firstUni.size(); j++)
+				cout << " " << singSet[j];
+			cout << "\n" << endl;
+		}
+	}
+
+	if(testFirst)
+	{
+		string fst = "FIRST(";
+		cout << "\nFIRST sets so far:" << endl;
+		for(int i = 0; i < universe_size; i++)
+		{
+			cout << fst << universe[i].lexeme << ") = { ";
+			print_set(firstSets[i]);
+			cout << "}" << endl;
+		}
+	}
+
+
+
+	if(testFirst)
+	{
+		cout << "" << endl;
+	}
+
+
+	if(testFirst)
+	{
+		cout << "\nDone with findFirstSets\n" << endl;
+	}
 
 	return firstSets;
 }
@@ -1249,7 +1330,7 @@ int main (int argc, char* argv[])
     vector<bool> newRules;
     vector<string> ruleStrings;
     //Case 3
-	vector< vector<int> > firstSets;
+	vector< vector<bool> > firstSets;
     //Case 4
     //Case 5
     if(testing)
