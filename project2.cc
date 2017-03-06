@@ -1095,6 +1095,7 @@ vector< vector<bool> > findFirstSets()
 					if ((k + 1) != singRuleSize) //check next token in rule
 					{
 						firstA_k = firstSets[singRule[k + 1]];
+						int elements = (int)count(firstA_k.begin(), firstA_k.end(), true);
 						if(testFirst)
 						{
 							cout << "\nStarting inner loop #" << k << endl;
@@ -1107,7 +1108,7 @@ vector< vector<bool> > findFirstSets()
 						}
 						//add FIRST(A_k) to FIRST(B)
 						//UNLESS A = B!!!
-						if(singRule[0] != singRule[k])
+						if((singRule[0] != singRule[k]) && elements != 0)
 							for (int l = 2; l < firstUniSize; l++)
 								if (is_element(firstA_k, l))
 									firstA[l] = true;
@@ -1141,7 +1142,8 @@ vector< vector<bool> > findFirstSets()
 				 */
 
 				//if FIRST(k) doesn't contain # && !reachedNonHash
-				if (!(is_element(firstB, 0) || reachedNonHash))
+				int elements = (int)count(firstB.begin(), firstB.end(), true);
+				if (!(is_element(firstB, 0) || reachedNonHash || (elements != 0)))
 				{
 					if(testFirst)
 						cout << "Applying Rule 4 - b" << endl;
