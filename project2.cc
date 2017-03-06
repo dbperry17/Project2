@@ -6,7 +6,6 @@
 #include <vector>
 #include <algorithm>
 #include "lexer.h"
-#include "project2.h"
 
 using namespace std;
 
@@ -16,7 +15,7 @@ using namespace std;
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
 const int loopMax = 10; //In case I need to change loop iterations
-bool testing = true; //to avoid having to comment things out
+bool testing = false; //to avoid having to comment things out
 bool testInput = false;
 bool testRules = true;
 bool test0 = false;
@@ -34,11 +33,9 @@ bool testUseSyms = true;
 bool testUseRules = true;
 bool testRuleStr = true;
 bool testRulePrint = true;
+bool testSingRuleStr = false;
 
-if(testRuleStr)
-{
-cout << "" <<  << endl;
-}
+
 //non-testing variables
 int universe_size = 0;
 int maxRules = 0;
@@ -95,6 +92,48 @@ void print_set(vector<bool> S)
         cout << "done printing" << endl;
 }
 
+string singRuleString(vector<int> singRule)
+{
+	if(testSingRuleStr)
+	{
+		cout << "\nStarting singRuleString" << endl;
+	}
+	string ruleStr = "";
+	int singRuleSize = singRule.size();
+	if(testSingRuleStr)
+	{
+		cout << "singRule = ";
+		for(int i = 0; i < singRuleSize; i++)
+			cout << to_string(singRule[i]) << " ";
+		cout << "" << endl;
+		cout << "singRuleSize = " << 2 << endl;
+	}
+
+	ruleStr = universe[singRule[0]].lexeme;
+	ruleStr += " -> ";
+	//if rule goes to epsilon
+	if (singRuleSize == 1)
+		ruleStr += "#";
+		//else rule doesn't go to epsilon
+	else
+		//for each item in RHS in each rule
+		//j = 1 because j = 0 is LHS
+		for (int j = 1; j < singRuleSize; j++)
+		{
+			ruleStr += universe[singRule[j]].lexeme;
+			if (j != singRuleSize - 1)
+				ruleStr += " ";
+		}
+
+	if(testSingRuleStr)
+	{
+		cout << "ruleStr = " << ruleStr << endl;
+		cout << "Done testing singRuleString\n" << endl;
+	}
+
+	return ruleStr;
+}
+
 void printRules(vector<string> rules)
 {
     if(testRulePrint)
@@ -103,15 +142,11 @@ void printRules(vector<string> rules)
     }
 
     int ruleSize = (int)rules.size();
-    if(testRulePrint)
-    {
-        cout << "ruleSize = " << ruleSize << endl;
-    }
     for(int i = 0; i < ruleSize; i++)
     {
-        if (testRulePrint)
-        {
-            cout << "i =" << i << endl;
+		if(testRulePrint)
+		{
+			cout << "ruleSize = " << ruleSize << endl;
         }
         cout << rules[i] << endl;
     }
@@ -143,84 +178,6 @@ vector< vector<int> > labelRules()
         {
             //Look at each universe item
             for (iterNest = universe.begin() + 2; iterNest != universe.end(); ++iterNest)
-            {
-                uniPosIter++;
-
-                if(testLabel)
-                {
-                    cout << "loop #" << to_string(tempLoop) << endl;
-                    cout << "Current lexeme = " << iter->lexeme << endl;
-                    cout << "uniPosIter = " << to_string(uniPosIter) << endl;
-                    tempLoop++;
-                }
-
-                //if current universe item (iterNest) matches current token (iter) in current rule (vecTokIter)
-                if (iterNest->lexeme == iter->lexeme)
-                {
-                    //add the universe position to the rules
-                    uniPos.push_back(uniPosIter);
-                    if(testLabel)
-                        cout << "Found! uniPosIter = " << to_string(uniPosIter) << endl;
-                }
-                else if(testLabel)
-                {
-                    cout << "no match found" << endl;
-                }
-            }
-            if(testLabel)
-            {
-                cout << "uniPos = ";
-                for (vector<int>::iterator iter = uniPos.begin(); iter != uniPos.end(); ++iter)
-                    cout << to_string(*iter) << ' ';
-                cout << "" << endl;
-            }
-            uniPosIter = 1;
-        }
-        rulePos.push_back(uniPos);
-
-        if(testLabel)
-        {
-            for (vector<int>::iterator iter = uniPos.begin(); iter != uniPos.end(); ++iter)
-                cout << to_string(*iter) << ' ';
-
-            cout << "" << endl;
-        }
-    }
-
-    if(testLabel)
-        cout << "Done testing labelRules" << endl;
-    return rulePos;
-
-}
-
-//Parameterized function
-vector< vector<int> > labelRules(vector<bool> usedSymbols)
-{
-    if(testLabel)
-        cout << "Testing labelRules" << endl;
-
-    vector<Token> newUni;
-
-
-    for(int i = 0; i < universe_size; i++)
-        if(usedSymbols[i])
-            newUni.push_back(universe[i]);
-
-    int tempLoop = 0;
-    int ruleNum = -1;
-    int uniPosIter = 1;
-    vector<vector<int> > rulePos;
-
-    //Look at each rule (vecTokIter)
-    for (vecTokIter = ruleList.begin(); vecTokIter != ruleList.end(); ++vecTokIter)
-    {
-        ruleNum++;
-        vector<int> uniPos;
-        //Look at each token (iter) in each rule (vecTokIter)
-        for (iter = vecTokIter->begin(); iter != vecTokIter->end(); ++iter)
-        {
-            //Look at each universe item
-            for (iterNest = newUni.begin() + 2; iterNest != newUni.end(); ++iterNest)
             {
                 uniPosIter++;
 
@@ -450,10 +407,19 @@ vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> valid
 
     vector<string> grammar;
     string ruleStr;
+	if(testRuleStr)
+	{
+		cout << "maxRules = " << maxRules << endl;
+	}
 
     //for each rule in rulesInts
     for(int i = 0; i < maxRules; i++)
     {
+		if(testRuleStr)
+		{
+			cout << "Is Rule " << i << " valid?" << endl;
+			cout << singRuleString(ruleInts[i]) << ": " << is_element(validRule, i) << endl;
+		}
         //if rule is valid
         if(is_element(validRule, i))
         {
@@ -461,57 +427,25 @@ vector<string> rulesAsString(vector < vector<int> > ruleInts, vector<bool> valid
             int singRuleSize = (int) singRule.size();
             if(testRuleStr)
             {
-                cout << "" <<  << endl;
+                cout << "singRuleSize = " << singRuleSize << endl;
             }
-            ruleStr = universe[singRule[0]].lexeme;
-            ruleStr += " -> ";
-            //if rule goes to epsilon
-            if (singRuleSize == 2)
-                ruleStr += "#";
-                //else rule doesn't go to epsilon
-            else
-                //for each item in RHS in each rule
-                //j = 1 because j = 0 is LHS
-                for (int j = 1; j < singRuleSize; j++)
-                {
-                    ruleStr += universe[singRule[j]].lexeme;
-                    if (j != singRuleSize - 1)
-                        ruleStr += " ";
-                }
+            ruleStr = singRuleString(singRule);
             grammar.push_back(ruleStr);
         }
     }
 
     if(testRuleStr)
     {
-        cout << "Done testing rulesAsString\n" << endl;
+		cout << "Final result: " << endl;
+		for(int i = 0; i < grammar.size(); i++)
+		{
+			cout << grammar[i] << endl;
+		}
+
+        cout << "\nDone testing rulesAsString\n" << endl;
     }
 
     return grammar;
-}
-
-string printSingRule(vector<int> singRule)
-{
-    string ruleStr = "";
-    int singRuleSize = singRule.size();
-
-    ruleStr = universe[singRule[0]].lexeme;
-    ruleStr += " -> ";
-    //if rule goes to epsilon
-    if (singRuleSize == 2)
-        ruleStr += "#";
-    //else rule doesn't go to epsilon
-    else
-        //for each item in RHS in each rule
-        //j = 1 because j = 0 is LHS
-        for (int j = 1; j < singRuleSize; j++)
-        {
-            ruleStr += universe[singRule[j]].lexeme;
-            if (j != singRuleSize - 1)
-                ruleStr += " ";
-        }
-
-    return ruleStr;
 }
 
 
@@ -731,7 +665,6 @@ vector<bool> findGenerating(vector < vector<int> > ruleInts)
     return genU;
 }
 
-
 /*
  * Pseudocode:
  *
@@ -798,7 +731,7 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
 
         if(testReach)
         {
-            cout << "Rule: " << printSingRule(singRule) << endl;
+            cout << "Rule: " << singRuleString(singRule) << endl;
         }
 
         //for each element in rule
@@ -911,14 +844,11 @@ vector<bool> findReachable(vector < vector<int> > ruleInts, vector<bool> genSyms
  *
  *  return reachSyms
  */
-
-
-
 vector<bool> findUsableSyms(vector<vector<int> > ruleInts)
 {
     if(testUseSyms)
     {
-        cout << "\nTesting findUseless"  << endl;
+        cout << "\nTesting findUsableSyms" << endl;
     }
 
     vector<bool> genSyms = findGenerating(ruleInts);
@@ -928,15 +858,16 @@ vector<bool> findUsableSyms(vector<vector<int> > ruleInts)
 
     //for each token in universe
     for(int i = 0; i < universe_size; i++)
-        //if token is in both genSyms and reachSyms
-        if(is_element(genSyms, i) && is_element(reachSyms, i))
-            //mark useableSyms token as true
-            usableSyms[i] = true;
-
+	{
+		//if token is in both genSyms and reachSyms
+		if (is_element(genSyms, i) && is_element(reachSyms, i))
+			//mark useableSyms token as true
+			usableSyms[i] = true;
+	}
     if(testUseSyms)
     {
         print_set(usableSyms);
-        cout << "\nDone testing FindUseless\n" << endl;
+        cout << "\nDone testing FindUsableSyms\n" << endl;
     }
 
     return usableSyms;
@@ -969,12 +900,23 @@ vector<bool> findUsableRules(vector< vector<int> > ruleInts, vector<bool> usable
         bool allUsed = true;
         vector<int> singRule = ruleInts[i];
         int singRuleSize = (int)singRule.size();
-        //for each item j in rule i in ruleInts
+		if(testUseSyms)
+		{
+			cout << "Testing Rule #" << i << ": " << singRuleString(singRule) << endl;
+			cout << "singRuleSize = " << singRuleSize << endl;
+		}
+		//for each item j in rule i in ruleInts
         for(int j = 0; j < singRuleSize; j++)
-            //if item j is not in usableSyms
-            if(!is_element(usableSyms, j))
-                allUsed = false;
-        if (allUsed)
+		{
+			//if item j is not in usableSyms
+			if (testUseSyms)
+			{
+				cout << "Item: " << singRule[j] << endl;
+			}
+			if (!is_element(usableSyms, singRule[j]))
+				allUsed = false;
+		}
+		if (allUsed)
             newRules[i] = true;
     }
 
@@ -1017,6 +959,7 @@ int main (int argc, char* argv[])
         testUseRules = false;
         testRuleStr = false;
         testRulePrint = false;
+		testSingRuleStr = false;
     }
 
     // NOTE: Below it teacher's code. Do not touch.
