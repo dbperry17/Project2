@@ -14,8 +14,8 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 1; //In case I need to change loop iterations
-bool testing = true; //to avoid having to comment things out
+const int loopMax = 10; //In case I need to change loop iterations
+bool testing = false; //to avoid having to comment things out
 bool testInput;
 bool testRules;
 bool test0;
@@ -1082,30 +1082,44 @@ vector< vector<bool> > findFirstSets()
 			{
 				firstB = firstSets[singRule[k]];
 				vector<bool> firstA_k;
+				if(testFirst)
+				{
+					cout << "\nStarting loop #" << k << endl;
+					cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
+					print_set(firstB);
+					cout << "}" << endl;
+				}
+
 				if(is_element(firstB, 0)) //if # is token in firstB
 				{
 					if ((k + 1) != singRuleSize) //check next token in rule
 					{
-						cout << "Applying Rule 4 - a" << endl;
 						firstA_k = firstSets[singRule[k + 1]];
+						if(testFirst)
+						{
+							cout << "\nStarting loop #" << k << endl;
+							cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
+							print_set(firstB);
+							cout << "}" << endl;
+							cout << "FIRST(" << universe[singRule[k + 1]].lexeme << ") = { ";
+							print_set(firstA_k);
+							cout << "}" << endl;
+						}
 						//add FIRST(A_k) to FIRST(B)
 						for (int l = 2; l < firstUniSize; l++)
 							if (is_element(firstA_k, l))
-								firstB[l] = true;
+								firstA[l] = true;
 					}
 				}
 
-				if(testFirst)
-				{
-					cout << "Applying Rule 4 - b01" << endl;
-					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-					print_set(firstA);
-					cout << "}" << endl;
-				}
-
+				
+				/*
 				for (int l = 2; l < firstUniSize; l++)
+				{
 					if (is_element(firstB, l))
 						firstA[l] = true;
+				}
+				 */
 
 				if(testFirst)
 				{
