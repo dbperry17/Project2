@@ -933,7 +933,7 @@ vector<bool> findUsableRules(vector<bool> usableSyms)
  * 		not a terminal.
  * III. If A → Xα, then add FIRST(X) − {ε} to FIRST(A)
  *	Translation:
- *		If A goes to a variable first, add the FIRST of that variable (minus ε) to FIRST(A)
+ *		If A goes to a token first, add the FIRST of that variable (minus ε) to FIRST(A)
  * IV. If A → A_1 A_2 A_3 ... A_iA_(i+1) ... A_k and
  * ε ∈ FIRST(A_1) and ε ∈ FIRST(A_2) and ... and ε ∈ FIRST(A_i),
  * then add FIRST(A_(i+1)) − {ε} to FIRST(A)
@@ -1009,12 +1009,14 @@ vector< vector<bool> > findFirstSets()
 				//Only bother with rules with current non-Terminal on LHS
 				if(singRule[0] == i)
 				{
-					int singRuleSize = singRule.size();
-					//III.	If A goes to a variable B first, add the FIRST(B) (minus ε)
+					int singRuleSize = (int)singRule.size();
+					vector<bool> firstB;
+					
+					//III.	If A goes to a token B first, add the FIRST(B) (minus ε)
 					// 		to FIRST(A)
-					if ((singRule[1] >= firstUniSize) && (singRule[0] < maxRules))
+					if ((singRule[1] > 1) && (singRule[0] < maxRules))
 					{
-						vector<bool> firstB = firstSets[singRule[1]];
+						firstB = firstSets[singRule[1]];
 						//for each member k of FIRST(B) (starting from 2)
 						//if k = true, then FIRST(A)[k] = true
 						for (int k = 2; k < firstUniSize; k++)
@@ -1022,15 +1024,30 @@ vector< vector<bool> > findFirstSets()
 								firstA[k] = true;
 					}
 
-
 					//IV.	If A goes to more than one thing, and the first i things
 					// 		contain ε in their FIRST sets, then add the FIRST set of the
 					// 		(i+1)th thing to A.
-
-
+					bool reachedNonHash = false;
+					//for each token k of rule j
+					//start at 1 because k = 0 is LHS
+					for(int k = 1; k < singRuleSize; k++)
+					{
+						firstB = firstSets[singRule[k]];
+						//if FIRST(k) doesn't contain # && !reachedNonHash
+						if(!(is_element(firstB, 0) || reachedNonHash))
+						{
+							//add FIRST(k) to FIRST(A)
+							for (int l = 2; l < firstUniSize; l++)
+								if (is_element(firstB, l))
+									firstA[l] = true;
+							reachedNonHash = true;
+						}
+					}
 
 					//V.	If everything that A goes to contains ε, then add ε to
 					// 		FIRST(A).
+
+
 				}
 			}
 
