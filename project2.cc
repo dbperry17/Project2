@@ -1028,7 +1028,7 @@ vector< vector<bool> > findFirstSets()
 			if(testFirst)
 			{
 				cout << "\nCurrent rule: " << j + 1 << "/" << maxRules
-					 << " "<< singRuleString(singRule) << endl;
+					 << "\n"<< singRuleString(singRule) << endl;
 				cout << "Rule size: " << singRuleSize << endl;
 				cout << "FIRST set at start of loop:" << endl;
 				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
@@ -1125,11 +1125,15 @@ vector< vector<bool> > findFirstSets()
 			}
 		}
 
-		if(!noChanges)
-			cout << "Changes made. Restarting Loop.\n" << endl;
-		else
-			cout << "While loop exited successfully" << endl;
+		if(testFirst)
+		{
+			if (!noChanges)
+				cout << "Changes made. Restarting Loop.\n" << endl;
+			else
+				cout << "While loop exited successfully" << endl;
 
+			cout << "----------------------------------------" << endl;
+		}
 		/*
 		//for each non-terminal
 		for (int i = firstUniSize; i < universe_size; i++)
