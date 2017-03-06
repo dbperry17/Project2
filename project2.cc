@@ -980,19 +980,20 @@ vector< vector<bool> > findFirstSets()
 
 	if (testFirst)
 	{
-		string fst = "FIRST(";
 		cout << "\nFIRST sets so far:" << endl;
 		for (int i = 0; i < universe_size; i++)
 		{
-			cout << fst << universe[i].lexeme << ") = { ";
+			cout << "FIRST(" << universe[i].lexeme << ") = { ";
 			print_set(firstSets[i]);
 			cout << "}" << endl;
 		}
 	}
 
 
-	while (!noChanges)
+	loopBreak = 0;
+	while ((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testFirst))
 	{
+		loopBreak++;
 		noChanges = true;
 		vector<bool> firstA;
 		vector<bool> changeCheck;
@@ -1005,13 +1006,20 @@ vector< vector<bool> > findFirstSets()
 			//for each rule
 			for (int j = 0; j < maxRules; j++)
 			{
+				if(testFirst)
+				{
+					cout << "\n\nAfter Rule 2: " << endl;
+					cout << "FIRST(" << universe[i].lexeme << ") = { ";
+					print_set(firstA);
+					cout << "}" << endl;
+				}
 				singRule = ruleInts[j];
 				//Only bother with rules with current non-Terminal on LHS
 				if(singRule[0] == i)
 				{
 					int singRuleSize = (int)singRule.size();
 					vector<bool> firstB;
-					
+
 					//III.	If A goes to a token B first, add the FIRST(B) (minus ε)
 					// 		to FIRST(A)
 					if ((singRule[1] > 1) && (singRule[0] < maxRules))
@@ -1022,6 +1030,19 @@ vector< vector<bool> > findFirstSets()
 						for (int k = 2; k < firstUniSize; k++)
 							if (is_element(firstB, k))
 								firstA[k] = true;
+					}
+					else if (testFirst)
+					{
+						cout << "Rule 2 skipped" << endl;
+					}
+
+
+					if(testFirst)
+					{
+						cout << "\nAfter Rule 3: " << endl;
+						cout << "FIRST(" << universe[i].lexeme << ") = { ";
+						print_set(firstA);
+						cout << "}" << endl;
 					}
 
 					//IV.	If A goes to more than one thing, and the first i things
@@ -1041,21 +1062,80 @@ vector< vector<bool> > findFirstSets()
 								if (is_element(firstB, l))
 									firstA[l] = true;
 							reachedNonHash = true;
+							if(testFirst)
+							{
+								cout << "\nAfter Rule 4: " << endl;
+								cout << "FIRST(" << universe[i].lexeme << ") = { ";
+								print_set(firstA);
+								cout << "}" << endl;
+							}
+						}
+						//V.	If everything that A goes to contains ε, then add ε to
+						// 		FIRST(A).
+						//else if k is last token of rule j and we haven't reached a
+						// nonHash in previous tokens and if k doesn't have a hash
+						else if((k == (singRuleSize - 1))	//k is last token in rule
+								&& !reachedNonHash			//haven't reached nonHash
+								&& is_element(firstB, 0))	//last token has hash
+						{
+							firstA[0] = true;
+							if(testFirst)
+							{
+								cout << "\nAfter Rule 5: " << endl;
+								cout << "FIRST(" << universe[i].lexeme << ") = { ";
+								print_set(firstA);
+								cout << "}" << endl;
+							}
+						}
+						else if(testFirst && reachedNonHash)
+						{
+							if(k == 1)
+								cout << "Skipped Rules 4 & 5" << endl;
+							else if(k < (singRuleSize - 1))
+								cout << "Skipped Rule 5" << endl;
+						}
+
+						if(testFirst)
+						{
+							cout << "\nAfter all rules: " << endl;
+							cout << "FIRST(" << universe[i].lexeme << ") = { ";
+							print_set(firstA);
+							cout << "}" << endl;
 						}
 					}
-
-					//V.	If everything that A goes to contains ε, then add ε to
-					// 		FIRST(A).
-
-
 				}
+				for (int k = firstUniSize; k < universe_size; k++)
+					if (is_element(firstA, k))
+						firstSets[i][k] = true;
+			}
+
+
+			if (testFirst)
+			{
+				cout << "" << endl;
 			}
 
 			for (int j = firstUniSize; j < universe_size; j++)
+			{
+				if (testFirst)
+				{
+					cout << "\nHas FIRST(" << universe[j].lexeme << ") changed?" << endl;
+					cout << "FIRST(" << universe[j].lexeme << ") = { ";
+					print_set(firstSets[j]);
+					cout << "}" << endl;
+					cout << "FIRST(changeCheck) = { ";
+					print_set(changeCheck);
+					cout << "}" << endl;
+				}
 				if (is_element(firstA, j) == is_element(changeCheck, j))
 					noChanges = false;
+			}
 		}
+		if(!noChanges && testFirst && (loopBreak < loopMax))
+			cout << "Changes made. Restarting Loop.\n" << endl;
 	}
+	if(testFirst && (loopBreak == loopMax))
+		cout << "\nWhile loop forcibly broken" << endl;
 
 	if (testFirst)
 	{
