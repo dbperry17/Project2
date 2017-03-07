@@ -1625,17 +1625,16 @@ vector< vector<bool> > findFollowSets()
 							}
 							else //C is a non-terminal
 							{
-								//# is not in FIRST(C)
-								if (!(is_element(firstSets[nextTokenSym], 0)))
+								//Regardless of whether # is in FIRST(C)
+								//add FIRST(C) - {#} to FOLLOW(B)
+								for (int k = 1; k < folUniSize; k++)
 								{
-									//add FIRST(C) - {#} to FOLLOW(B)
-									for (int k = 1; k < folUniSize; k++)
-									{
-										if (is_element(firstSets[nextTokenSym], k))
-											folOfToken[k] = true;
-									}
+									if (is_element(firstSets[nextTokenSym], k))
+										folOfToken[k] = true;
 								}
-								else //# is in FIRST(C)
+								//# is in FIRST(C)
+								if (is_element(firstSets[nextTokenSym], 0))
+
 								{
 									//C is last token in rule
 									if ((tokenPos + 2) == singRuleSize)
