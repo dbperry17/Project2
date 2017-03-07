@@ -15,8 +15,8 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 3; //In case I need to change loop iterations
-bool testing = true; //to avoid having to comment things out
+const int loopMax = 4; //In case I need to change loop iterations
+bool testing = false; //to avoid having to comment things out
 bool testInput;
 bool testRules;
 bool test0;
@@ -1184,14 +1184,20 @@ vector< vector<bool> > findFirstSets()
 								//if frontMost token has a hash in its FIRST
 								if (is_element(firstOfToken, 0))
 								{
+									int nextTokenPos = tokenPos + 1;
 									if(testFirst)
 									{
 										cout << "# is an element of " << universe[tokenSym].lexeme << endl;
+										cout << "nextTokenPos = " << nextTokenPos << endl;
+										cout << "singRuleSize = " << singRuleSize << endl;
 									}
-									int nextTokenPos = tokenPos + 1;
 									//Rule V
 									if (nextTokenPos >= singRuleSize)    // next token does not exist
-										firstSets[j][0] = true; //add # to firstA
+										for (int k = 0; k < firstUniSize; k++)
+										{
+											if (is_element(firstSets[singRule[tokenPos]], k))
+												firstSets[ruleLHS][k] = true;
+										}
 									else
 									{
 										elements = (int) count(firstSets[singRule[nextTokenPos]].begin(),
@@ -1292,6 +1298,7 @@ vector< vector<bool> > findFirstSets()
 			//For every item in universeFF
 			for(int i = 0; i < firstUniSize; i++)
 			{
+				/*
 				if(testFirst)
 				{
 					cout << "COMPARING: " << endl;
@@ -1305,6 +1312,7 @@ vector< vector<bool> > findFirstSets()
 						 << boolalpha << (is_element(firstSets[ruleLHS], i)
 										  == is_element(changeCheck, i)) << endl;
 				}
+				 */
 				if (is_element(firstSets[ruleLHS], i) != is_element(changeCheck, i))
 					noChanges = false;
 			}
@@ -1319,8 +1327,9 @@ vector< vector<bool> > findFirstSets()
 				print_set(firstSets[ruleLHS]);
 				cout << "}" << endl;
 			}
-			else if(testFirst)
-				cout << "Done. This is final round of While Loop." << endl;
+			else if(testFirst && (j == (maxRules - 1)))
+				cout << "No changes made for FIRST(" << universe[ruleLHS].lexeme
+					 << ")" << endl;
 
 		}
 
