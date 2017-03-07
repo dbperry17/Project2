@@ -1583,38 +1583,81 @@ vector< vector<bool> > findFollowSets()
 				for (int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
 				{
 					tokenSym = singRule[tokenPos];
-					if (testFirst)
+					int nextTokenSym;
+					if (testFollow)
 						cout << "\nToken #" << tokenPos << ": "
 							 << universe[tokenSym].lexeme << endl;
 
 					tokenSym = singRule[tokenPos];
-					folOfToken = firstSets[tokenSym];
-					if (testFirst)
+					folOfToken = followSets[tokenSym];
+					if (testFollow)
 					{
 						cout << "FOLLOW(" << universe[tokenSym].lexeme << ") = { ";
 						print_set(folOfToken);
 						cout << "}" << endl;
 					}
-				//B is a non-terminal
-				if((singRule[1] >= folUniSize) && (singRule[1] < universe_size))
-				{
-					if( //B is at end of rule
-					//add FOLLOW(A) to FOLLOW(B)
-					//2. B is followed by C
-					//1. C is a terminal
-					//add FIRST(C) to FOLLOW(B)
-					//2. C is a non-terminal
-					//1. # is not in FIRST(C)
-					//add FIRST(C) - {#} to FOLLOW(B)
-					//2. # is in FIRST(C)
-					//1. C is last token in rule
-					//add FOLLOW(A) to FOLLOW(B)
-					//2. C is followed by more things, all represented as a single D
-					//1. All tokens in D contain # in their FIRST sets
-					//add FOLLOW(A) to FOLLOW(B)
-					//2. All tokens up until X in D contain #
-					//add FIRST(X) to FOLLOW(B)
+					//B is a non-terminal
+					if((singRule[tokenPos] >= folUniSize)
+					   && (singRule[tokenPos] < universe_size))
+					{
+						//B is at end of rule
+						if(tokenPos == (singRuleSize - 1))
+						{
+							//add FOLLOW(A) to FOLLOW(B)
+							for (int k = 1; k < folUniSize; k++)
+							{
+								if (is_element(followSets[ruleLHS], k))
+									folOfToken[k] = true;
+							}
+						}
+						else //B is followed by C
+						{
+							nextTokenSym = singRule[tokenPos + 1];
+							//C is a terminal
+							if(nextTokenSym < folUniSize)
+							{
+								//add FIRST(C) to FOLLOW(B)
+								for (int k = 1; k < folUniSize; k++)
+								{
+									if (is_element(firstSets[nextTokenSym], k))
+										folOfToken[k] = true;
+								}
+							}
+							else //C is a non-terminal
+							{
+								//# is not in FIRST(C)
+								if(!(is_element(firstSets[nextTokenSym], 0)))
+								{
+									//add FIRST(C) - {#} to FOLLOW(B)
+									for (int k = 1; k < folUniSize; k++)
+									{
+										if (is_element(firstSets[nextTokenSym], k))
+											folOfToken[k] = true;
+									}
+								}
+								else //# is in FIRST(C)
+								{
+									if() //C is last token in rule
+									{
+										//add FOLLOW(A) to FOLLOW(B)
+									}
+									else //C is followed by more things, all represented as a single D
+									{
+										if()//All tokens in D contain # in their FIRST sets
+										{
+											//add FOLLOW(A) to FOLLOW(B)
+										}
+										else//All tokens up until X in D contain #
+										{
+											//add FIRST(X) to FOLLOW(B)
+										}
+									}
+								}
+							}
+						}
+					}
 				}
+
 				//else B is terminal
 					//Nothing. Ignore rule.
 			}
