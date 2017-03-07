@@ -15,7 +15,7 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 2; //In case I need to change loop iterations
+const int loopMax = 3; //In case I need to change loop iterations
 bool testing = true; //to avoid having to comment things out
 bool testInput;
 bool testRules;
@@ -1167,7 +1167,8 @@ vector< vector<bool> > findFirstSets()
 						//if current token is non-Terminal
 						if ((tokenSym >= firstUniSize) && (tokenSym < universe_size))
 						{
-							cout << "Token is not a terminal" << endl;
+							if(testFirst)
+								cout << "Token is not a terminal" << endl;
 							elements = (int) count(firstOfToken.begin(), firstOfToken.end(), true);
 							if (testFirst)
 							{
@@ -1180,7 +1181,6 @@ vector< vector<bool> > findFirstSets()
 							//if frontmost token is not empty
 							if (elements != 0)
 							{
-								cout << "test 6" << endl;
 								//if frontMost token has a hash in its FIRST
 								if (is_element(firstOfToken, 0))
 								{
@@ -1214,9 +1214,9 @@ vector< vector<bool> > findFirstSets()
 												cout << "FIRST(" << universe[singRule[nextTokenPos]].lexeme << ") = { ";
 												print_set(firstSets[singRule[nextTokenPos]]);
 												cout << "}" << endl;
+												cout << "Adding FIRST(" << universe[singRule[nextTokenPos]].lexeme
+													 << ") to FIRST(" << universe[ruleLHS].lexeme << ")" << endl;
 											}
-											cout << "Adding FIRST(" << universe[singRule[nextTokenPos]].lexeme
-												 << ") to FIRST(" << universe[ruleLHS].lexeme << ")" << endl;
 											for (int k = 2; k < firstUniSize; k++)
 											{
 												if (is_element(firstSets[singRule[nextTokenPos]], k))
@@ -1236,7 +1236,8 @@ vector< vector<bool> > findFirstSets()
 									//add firstOfToken to firstA
 									for (int k = 2; k < firstUniSize; k++)
 										if (is_element(firstOfToken, k))
-											firstSets[j][k] = true;
+											firstSets[ruleLHS][k] = true;
+									break;
 								}
 							}
 							else
@@ -1270,7 +1271,6 @@ vector< vector<bool> > findFirstSets()
 					}
 				}
 
-				cout << "test 3" << endl;
 				if (testFirst)
 				{
 					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
@@ -1279,10 +1279,48 @@ vector< vector<bool> > findFirstSets()
 				}
 			}
 
-			//For every item in universe
+			if(testFirst)
+			{
+				cout << "COMPARING: " << endl;
+				cout << "FIRST(changeCheck) = { ";
+				print_set(changeCheck);
+				cout << "}" << endl;
+				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+				print_set(firstSets[ruleLHS]);
+				cout << "}" << endl;
+			}
+			//For every item in universeFF
 			for(int i = 0; i < firstUniSize; i++)
-				if (is_element(firstSets[j], i) == is_element(changeCheck, i))
+			{
+				if(testFirst)
+				{
+					cout << "COMPARING: " << endl;
+					cout << "Is " << universeFF[i].lexeme << " in FIRST("
+						 << universe[ruleLHS].lexeme << ")? " << boolalpha
+						 << is_element(firstSets[ruleLHS], i) << endl;
+					cout << "Is " << universeFF[i].lexeme << " in FIRST(changeCheck)? "
+						 << boolalpha << is_element(changeCheck, i) << endl;
+
+					cout << "Is " << universeFF[i].lexeme << " in both FIRST sets? "
+						 << boolalpha << (is_element(firstSets[ruleLHS], i)
+										  == is_element(changeCheck, i)) << endl;
+				}
+				if (is_element(firstSets[ruleLHS], i) != is_element(changeCheck, i))
 					noChanges = false;
+			}
+
+			if (testFirst && !noChanges)
+			{
+				cout << "Changes made. Loop will be restarted after rules are done.\n" << endl;
+				cout << "FIRST(changeCheck) = { ";
+				print_set(changeCheck);
+				cout << "}" << endl;
+				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+				print_set(firstSets[ruleLHS]);
+				cout << "}" << endl;
+			}
+			else if(testFirst)
+				cout << "Done. This is final round of While Loop." << endl;
 
 		}
 
@@ -1541,7 +1579,6 @@ vector< vector<bool> > findFirstSets()
 
 
 
-
 		if (testFirst)
 		{
 			cout << "\nFIRST sets so far:" << endl;
@@ -1552,6 +1589,9 @@ vector< vector<bool> > findFirstSets()
 				cout << "}" << endl;
 			}
 		}
+
+		if(testFirst)
+			cout << "-------------------------------------------------------------" << endl;
 
 	}
 	if(testFirst && (loopBreak == loopMax))
