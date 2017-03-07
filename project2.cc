@@ -15,7 +15,7 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 1; //In case I need to change loop iterations
+const int loopMax = 2; //In case I need to change loop iterations
 bool testing = true; //to avoid having to comment things out
 bool testInput;
 bool testRules;
@@ -937,32 +937,32 @@ vector<bool> findUsableRules(vector<bool> usableSyms)
     return newRules;
 }
 
-/*******************************************
- * 					TASK 3
- * 			Calculate FIRST Sets
- *
- * Functions:
- * 		vector< vector<int> > firstSets()
- ******************************************/
+/********************************************
+ * 					TASK 3					*
+ * 			Calculate FIRST Sets			*
+ *											*
+ * Functions:								*
+ * 		vector< vector<int> > firstSets()	*
+ ********************************************/
 
 /*
  * I. FIRST(X) = {X} if X is a terminal
- * II.  FIRST(ε) = {ε}.  Note that this is not covered by the first rule because ε is
+ * II.  FIRST(#) = {#}.  Note that this is not covered by the first rule because # is
  * 		not a terminal.
- * III. If A → Xα, then add FIRST(X) − {ε} to FIRST(A)
+ * III. If A → Xα, then add FIRST(X) − {#} to FIRST(A)
  *	Translation:
- *		If A goes to a token first, add the FIRST of that variable (minus ε) to FIRST(A)
+ *		If A goes to a token first, add the FIRST of that variable (minus #) to FIRST(A)
  * IV. If A → A_1 A_2 A_3 ... A_iA_(i+1) ... A_k and
- * ε ∈ FIRST(A_1) and ε ∈ FIRST(A_2) and ... and ε ∈ FIRST(A_i),
- * then add FIRST(A_(i+1)) − {ε} to FIRST(A)
+ * # ∈ FIRST(A_1) and # ∈ FIRST(A_2) and ... and # ∈ FIRST(A_i),
+ * then add FIRST(A_(i+1)) − {#} to FIRST(A)
  *	Translation:
- *		If A goes to more than one thing, and the first i things contain ε in their
+ *		If A goes to more than one thing, and the first i things contain # in their
  *		FIRST sets, then add the FIRST set of the (i+1)th thing to A.
  * V. If A → A_1 A_2 A_3 ... A_k and
- * ε ∈ FIRST(A_1) and ε ∈ FIRST(A_2) and ... and ε ∈ FIRST(A_k),
- * then add ε to FIRST(A).
+ * # ∈ FIRST(A_1) and # ∈ FIRST(A_2) and ... and # ∈ FIRST(A_k),
+ * then add # to FIRST(A).
  *	Translation:
- *		If everything that A goes to contains ε, then add ε to FIRST(A).
+ *		If everything that A goes to contains #, then add # to FIRST(A).
  */
 vector< vector<bool> > findFirstSets()
 {
@@ -979,7 +979,7 @@ vector< vector<bool> > findFirstSets()
 
 
 	//I. FIRST(X) = {X} if X is a terminal
-	//II.  FIRST(ε) = {ε}.
+	//II.  FIRST(#) = {#}.
 	for (int i = 0; i < universe_size; i++)
 	{
 		vector<bool> firstUni((unsigned long) firstUniSize);
@@ -1012,24 +1012,34 @@ vector< vector<bool> > findFirstSets()
 	while ((!noChanges && (loopBreak < loopMax)) || (!noChanges && !testFirst))
 	{
 		loopBreak++;
-		if(testFirst)
+		if (testFirst)
+		{
 			cout << "Loop #" << loopBreak << endl;
+			cout << "\nFIRST sets so far:" << endl;
+			for (int i = firstUniSize; i < universe_size; i++)
+			{
+				cout << "FIRST(" << universe[i].lexeme << ") = { ";
+				print_set(firstSets[i]);
+				cout << "}" << endl;
+			}
+		}
 		noChanges = true;
 		vector<bool> firstA;
 		vector<bool> changeCheck;
 		vector<int> singRule;
 		//for each rule
-		for(int j = 0; j < maxRules; j++)
+		for (int j = 0; j < maxRules; j++)
 		{
 			singRule = ruleInts[j];
 			int ruleLHS = singRule[0];
 			firstA = firstSets[ruleLHS];
 			changeCheck = firstA;
 			int singRuleSize = (int) singRule.size();
-			if(testFirst)
+			if (testFirst)
 			{
+				cout << "----------" << endl;
 				cout << "\nCurrent rule: " << j + 1 << "/" << maxRules
-					 << "\n"<< singRuleString(singRule) << endl;
+					 << "\n" << singRuleString(singRule) << endl;
 				cout << "Rule size: " << singRuleSize << endl;
 				cout << "FIRST set at start of loop:" << endl;
 				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
@@ -1038,13 +1048,16 @@ vector< vector<bool> > findFirstSets()
 			}
 			vector<bool> firstB;
 
-
-			//III.	If A goes to a token B first, add the FIRST(B) (minus ε)
+			//III.	If A goes to a token B first, add the FIRST(B) (minus #)
 			// 		to FIRST(A)
-			if ((singRuleSize != 1)				//If rule != #
-				&& (singRule[1] > 1))			//If first item is not epsilon
+			if (testFirst)
 			{
-				if(testFirst)
+				cout << "Testing rule 3" << endl;
+			}
+			if ((singRuleSize != 1)                //If rule != #
+				&& (singRule[1] > 1))            //If first item is not epsilon
+			{
+				if (testFirst)
 					cout << "Applying Rule 3" << endl;
 				firstB = firstSets[singRule[1]];
 				//for each member k of FIRST(B) (starting from 2)
@@ -1052,29 +1065,37 @@ vector< vector<bool> > findFirstSets()
 				for (int k = 2; k < firstUniSize; k++)
 					if (is_element(firstB, k))
 						firstA[k] = true;
-				if(testFirst)
-				{
-					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-					print_set(firstA);
-					cout << "}" << endl;
-				}
+			}
+			if (testFirst)
+			{
+				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+				print_set(firstSets[ruleLHS]);
+				cout << "}" << endl;
+				cout << "Testing rule 5-a" << endl;
 			}
 
-			if(singRuleSize == 1)
+
+			if (singRuleSize == 1)
 			{
 				firstA[0] = true;
-				if(testFirst)
+				if (testFirst)
 				{
 					cout << "Applying rule 5 - a" << endl;
 					cout << "firstA[0] = " << firstA[0] << endl;
-					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-					print_set(firstA);
-					cout << "}" << endl;
 				}
 			}
 
+			if (testFirst)
+			{
+				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+				print_set(firstSets[ruleLHS]);
+				cout << "}" << endl;
+				cout << "Testing Rule 4" << endl;
+			}
+
+
 			//IV.	If A goes to more than one thing, and the first i things
-			// 		contain ε in their FIRST sets, then add the FIRST set of the
+			// 		contain # in their FIRST sets, then add the FIRST set of the
 			// 		(i+1)th thing to A.
 			/*
 			 *
@@ -1110,179 +1131,277 @@ vector< vector<bool> > findFirstSets()
 			 * 			}
 			 *
 			 */
-
-
-			bool emptyFirst;
-			bool hasHash;
 			int elements = 0;
-			elements = (int)count(firstA.begin(), firstA.end(), true);
+			elements = (int) count(firstA.begin(), firstA.end(), true);
 			//If A is not empty
-			if(elements != 0)
+			if (elements != 0)
 			{
+				if(testFirst)
+					cout << "FIRST(A) is not empty" << endl;
+
 				vector<bool> firstOfToken;
 				int tokenSym; //so universe[tokenSym].lexeme outputs proper lexeme
-
-				//for each token in singRule A
-				for(int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
+				if(singRuleSize == 1) //A -> #
 				{
-					tokenSym = singRule[tokenPos];
-					firstOfToken = firstSets[tokenSym];
-					//if current token is non-Terminal
-					if((tokenSym >= firstUniSize) && (tokenSym < universe_size))
+					firstSets[ruleLHS][0] = true;
+				}
+				else
+				{
+					//for each token in singRule A
+					for (int tokenPos = 1; tokenPos < singRuleSize; tokenPos++)
 					{
-						//if frontmost token is not empty
-						elements = (int)count(firstOfToken.begin(), firstOfToken.end(), true);
-						if (elements != 0)
+						tokenSym = singRule[tokenPos];
+						if (testFirst)
+							cout << "\nToken #" << tokenPos << ": "
+								 << universe[tokenSym].lexeme << endl;
+
+						tokenSym = singRule[tokenPos];
+						firstOfToken = firstSets[tokenSym];
+						if (testFirst)
 						{
-							//if frontMost token has a hash in its FIRST
-							if (is_element(firstOfToken, 0))
+							cout << "FIRST(" << universe[tokenSym].lexeme << ") = { ";
+							print_set(firstOfToken);
+							cout << "}" << endl;
+						}
+
+						//if current token is non-Terminal
+						if ((tokenSym >= firstUniSize) && (tokenSym < universe_size))
+						{
+							cout << "Token is not a terminal" << endl;
+							elements = (int) count(firstOfToken.begin(), firstOfToken.end(), true);
+							if (testFirst)
 							{
-								//Rule V
-								if ((tokenPos + 1) >= singRuleSize)	// next token does not exist
-									firstA[0] = true; //add # to firstA
-								else	//rule IV
-									firstSets[singRule[tokenPos + 1]];
-									// TODO: not sure about last line
-									//add nextToken's first set to firstA
+								cout << "FIRST(" << universe[tokenSym].lexeme << ") = { ";
+								print_set(firstSets[tokenSym]);
+								cout << "}" << endl;
+								cout << "Elements: " << elements << endl;
 							}
-							else    //frontMost does not have hash
+
+							//if frontmost token is not empty
+							if (elements != 0)
 							{
-								//add firstOfToken to firstA
-								for (int k = 2; k < firstUniSize; k++)
-									if (is_element(firstOfToken, k))
-										firstA[k] = true;
+								cout << "test 6" << endl;
+								//if frontMost token has a hash in its FIRST
+								if (is_element(firstOfToken, 0))
+								{
+									if(testFirst)
+									{
+										cout << "# is an element of " << universe[tokenSym].lexeme << endl;
+									}
+									int nextTokenPos = tokenPos + 1;
+									//Rule V
+									if (nextTokenPos >= singRuleSize)    // next token does not exist
+										firstSets[j][0] = true; //add # to firstA
+									else
+									{
+										elements = (int) count(firstSets[singRule[nextTokenPos]].begin(),
+															   firstSets[singRule[nextTokenPos]].end(), true);
+										if(elements == 0)
+										{
+											if(testFirst)
+												cout << "Next token's FIRST set is empty" << endl;
+											for (int k = 2; k < firstUniSize; k++)
+											{
+												if (is_element(firstSets[tokenSym], k))
+													firstSets[ruleLHS][k] = true;
+											}
+										}
+										else    //rule IV
+										{
+											if (testFirst)
+											{
+												cout << "Next token exists, FIRST set is not empty" << endl;
+												cout << "FIRST(" << universe[singRule[nextTokenPos]].lexeme << ") = { ";
+												print_set(firstSets[singRule[nextTokenPos]]);
+												cout << "}" << endl;
+											}
+											cout << "Adding FIRST(" << universe[singRule[nextTokenPos]].lexeme
+												 << ") to FIRST(" << universe[ruleLHS].lexeme << ")" << endl;
+											for (int k = 2; k < firstUniSize; k++)
+											{
+												if (is_element(firstSets[singRule[nextTokenPos]], k))
+													firstSets[ruleLHS][k] = true;
+												// TODO: not sure about last line
+												//add nextToken's first set to firstA
+											}
+										}
+									}
+								}
+								else    //frontMost does not have hash
+								{
+									if(testFirst)
+									{
+										cout << "# is NOT an element of " << universe[tokenSym].lexeme << endl;
+									}
+									//add firstOfToken to firstA
+									for (int k = 2; k < firstUniSize; k++)
+										if (is_element(firstOfToken, k))
+											firstSets[j][k] = true;
+								}
+							}
+							else
+							{
+								if (testFirst)
+									cout << "Token is empty" << endl;
+								break;    //break forLoop; examine no other tokens because
+								//frontmost is empty
 							}
 						}
-						else
+						else    //current token is terminal
 						{
-							break;	//break forLoop; examine no other tokens because
-									//frontmost is empty
+							if (testFirst)
+								cout << "Token is a terminal" << endl;
+							//add firstOfToken to firstA
+							for (int k = 2; k < firstUniSize; k++)
+							{
+								if (is_element(firstOfToken, k))
+									firstSets[ruleLHS][k] = true;
+							}
+							if (testFirst)
+							{
+								cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+								print_set(firstSets[ruleLHS]);
+								cout << "}" << endl;
+							}
+							break;
 						}
-					}
-					else	//current token is terminal
-					{
-						//add firstOfToken to firstA
-						for (int k = 2; k < firstUniSize; k++)
-							if (is_element(firstOfToken, k))
-								firstA[k] = true;
-						break;
-					}
 
 
+					}
 				}
 
+				cout << "test 3" << endl;
+				if (testFirst)
+				{
+					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+					print_set(firstSets[ruleLHS]);
+					cout << "}" << endl;
+				}
 			}
 
-			/*
-			bool reachedNonHash = false;
-			//for each token k of rule j
-			//start at 1 because k = 0 is LHS
-			for (int k = 1; k < singRuleSize; k++)
-			{
+			//For every item in universe
+			for(int i = 0; i < firstUniSize; i++)
+				if (is_element(firstSets[j], i) == is_element(changeCheck, i))
+					noChanges = false;
 
-				/*
-				firstB = firstSets[singRule[k]];
-				vector<bool> firstA_k;
+		}
+
+		if (testFirst && !noChanges)
+			cout << "Changes made. Restarting Loop.\n" << endl;
+		else if(testFirst)
+			cout << "Done. Ending While Loop." << endl;
+
+
+		/*
+		bool reachedNonHash = false;
+		//for each token k of rule j
+		//start at 1 because k = 0 is LHS
+		for (int k = 1; k < singRuleSize; k++)
+		{
+*/
+		/*
+		firstB = firstSets[singRule[k]];
+		vector<bool> firstA_k;
+		if(testFirst)
+		{
+			cout << "\nStarting outer loop #" << k << endl;
+			cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
+			print_set(firstB);
+			cout << "}" << endl;
+		}
+
+		if(is_element(firstB, 0)) //if # is token in firstB
+		{
+			if ((k + 1) != singRuleSize) //check next token in rule
+			{
+				firstA_k = firstSets[singRule[k + 1]];
+				int elements = (int)count(firstA_k.begin(), firstA_k.end(), true);
 				if(testFirst)
 				{
-					cout << "\nStarting outer loop #" << k << endl;
+					cout << "\nStarting inner loop #" << k << endl;
 					cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
 					print_set(firstB);
 					cout << "}" << endl;
-				}
-
-				if(is_element(firstB, 0)) //if # is token in firstB
-				{
-					if ((k + 1) != singRuleSize) //check next token in rule
-					{
-						firstA_k = firstSets[singRule[k + 1]];
-						int elements = (int)count(firstA_k.begin(), firstA_k.end(), true);
-						if(testFirst)
-						{
-							cout << "\nStarting inner loop #" << k << endl;
-							cout << "FIRST(" << universe[singRule[k]].lexeme << ") = { ";
-							print_set(firstB);
-							cout << "}" << endl;
-							cout << "FIRST(" << universe[singRule[k + 1]].lexeme << ") = { ";
-							print_set(firstA_k);
-							cout << "}" << endl;
-						}
-						//add FIRST(A_k) to FIRST(B)
-						//UNLESS A = B!!!
-						if((singRule[0] != singRule[k]) && elements != 0)
-							for (int l = 2; l < firstUniSize; l++)
-								if (is_element(firstA_k, l))
-									firstA[l] = true;
-						else if(elements == 0)
-									break;
-					}
-				}
-
-
-				/*
-				for (int l = 2; l < firstUniSize; l++)
-				{
-					if (is_element(firstB, l))
-						firstA[l] = true;
-				}
-				 */
-
-				/*
-				if(testFirst)
-				{
-					cout << "Applying Rule 4 - b02" << endl;
-					cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-					print_set(firstA);
+					cout << "FIRST(" << universe[singRule[k + 1]].lexeme << ") = { ";
+					print_set(firstA_k);
 					cout << "}" << endl;
 				}
-
-				/*
-				if(testFirst && (j = 5) )
-				{
-					cout << "firstB = ";
-					print_set(firstB);
-					cout << endl;
-				}
-				 */
-
-				/*
-				//if FIRST(k) doesn't contain # && !reachedNonHash
-				int elements = (int)count(firstB.begin(), firstB.end(), true);
-				if (!(is_element(firstB, 0) || reachedNonHash || (elements != 0)))
-				{
-					if(testFirst)
-						cout << "Applying Rule 4 - b" << endl;
-					//add FIRST(k) to FIRST(A)
+				//add FIRST(A_k) to FIRST(B)
+				//UNLESS A = B!!!
+				if((singRule[0] != singRule[k]) && elements != 0)
 					for (int l = 2; l < firstUniSize; l++)
-					{
-						if (is_element(firstB, l))
-						{
+						if (is_element(firstA_k, l))
 							firstA[l] = true;
-						}
-					}
-					reachedNonHash = true;
+				else if(elements == 0)
+							break;
+			}
+		}
 
-					if(testFirst)
-					{
-						cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-						print_set(firstA);
-						cout << "}" << endl;
-					}
-				}
-					//V.	If everything that A goes to contains ε, then add ε to
-					// 		FIRST(A).
-					//else if k is last token of rule j and we haven't reached a
-					// nonHash in previous tokens and if k doesn't have a hash
-				if ((k == (singRuleSize - 1))  //k is last token in rule
-						 && !reachedNonHash			//&& haven't reached nonHash
-						 && (is_element(firstB, 0)  //&& (last token has hash
-							 || (singRuleSize == 1)))	//|| rule just has LHS)
+*/
+		/*
+		for (int l = 2; l < firstUniSize; l++)
+		{
+			if (is_element(firstB, l))
+				firstA[l] = true;
+		}
+		 */
+
+		/*
+		if(testFirst)
+		{
+			cout << "Applying Rule 4 - b02" << endl;
+			cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+			print_set(firstA);
+			cout << "}" << endl;
+		}
+*/
+		/*
+		if(testFirst && (j = 5) )
+		{
+			cout << "firstB = ";
+			print_set(firstB);
+			cout << endl;
+		}
+		 */
+
+		/*
+		//if FIRST(k) doesn't contain # && !reachedNonHash
+		int elements = (int)count(firstB.begin(), firstB.end(), true);
+		if (!(is_element(firstB, 0) || reachedNonHash || (elements != 0)))
+		{
+			if(testFirst)
+				cout << "Applying Rule 4 - b" << endl;
+			//add FIRST(k) to FIRST(A)
+			for (int l = 2; l < firstUniSize; l++)
+			{
+				if (is_element(firstB, l))
 				{
-					if(testFirst)
-						cout << "Applying Rule 5 - b" << endl;
-					firstA[0] = true;
+					firstA[l] = true;
 				}
-			*/
+			}
+			reachedNonHash = true;
+
+			if(testFirst)
+			{
+				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
+				print_set(firstA);
+				cout << "}" << endl;
+			}
+		}
+			//V.	If everything that A goes to contains #, then add # to
+			// 		FIRST(A).
+			//else if k is last token of rule j and we haven't reached a
+			// nonHash in previous tokens and if k doesn't have a hash
+		if ((k == (singRuleSize - 1))  //k is last token in rule
+				 && !reachedNonHash			//&& haven't reached nonHash
+				 && (is_element(firstB, 0)  //&& (last token has hash
+					 || (singRuleSize == 1)))	//|| rule just has LHS)
+		{
+			if(testFirst)
+				cout << "Applying Rule 5 - b" << endl;
+			firstA[0] = true;
+		}
+	*/
 		/*	}
 
 
@@ -1319,6 +1438,7 @@ vector< vector<bool> > findFirstSets()
 
 			cout << "----------------------------------------" << endl;
 		}
+		 */
 		/*
 		//for each non-terminal
 		for (int i = firstUniSize; i < universe_size; i++)
@@ -1342,7 +1462,7 @@ vector< vector<bool> > findFirstSets()
 					int singRuleSize = (int) singRule.size();
 					vector<bool> firstB;
 
-					//III.	If A goes to a token B first, add the FIRST(B) (minus ε)
+					//III.	If A goes to a token B first, add the FIRST(B) (minus #)
 					// 		to FIRST(A)
 					if ((singRule[1] > 1) && (singRule[0] < maxRules))
 					{
@@ -1359,7 +1479,7 @@ vector< vector<bool> > findFirstSets()
 					}
 
 					//IV.	If A goes to more than one thing, and the first i things
-					// 		contain ε in their FIRST sets, then add the FIRST set of the
+					// 		contain # in their FIRST sets, then add the FIRST set of the
 					// 		(i+1)th thing to A.
 					bool reachedNonHash = false;
 					//for each token k of rule j
@@ -1376,7 +1496,7 @@ vector< vector<bool> > findFirstSets()
 									firstA[l] = true;
 							reachedNonHash = true;
 						}
-							//V.	If everything that A goes to contains ε, then add ε to
+							//V.	If everything that A goes to contains #, then add # to
 							// 		FIRST(A).
 							//else if k is last token of rule j and we haven't reached a
 							// nonHash in previous tokens and if k doesn't have a hash
@@ -1418,15 +1538,9 @@ vector< vector<bool> > findFirstSets()
 				}
 		}
 */
-		/*
-		for(int j = 0; j < firstUniSize; j++)
-			if (is_element(firstSets[i], j) == is_element(changeCheck, j))
-			{
-				noChanges = false;
-				if (testFirst)
-					cout << "Changes made. Restarting Loop.\n" << endl;
-			}
-		 */
+
+
+
 
 		if (testFirst)
 		{
@@ -1634,7 +1748,7 @@ int main (int argc, char* argv[])
         if (token.token_type != DOUBLEHASH)
         {
             if (!RHS_string.compare(""))
-                singRuleStr += "ε";
+                singRuleStr += "#";
 
             ruleCount++;
             ruleStr.push_back(singRuleStr);
