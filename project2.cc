@@ -15,8 +15,8 @@ using namespace std;
  ****************/
 //testing variables
 int loopBreak = 0; //to prevent infinite loops while testing
-const int loopMax = 4; //In case I need to change loop iterations
-bool testing = true; //to avoid having to comment things out
+const int loopMax = 2; //In case I need to change loop iterations
+bool testing = false; //to avoid having to comment things out
 bool testInput;
 bool testRules;
 bool test0;
@@ -1559,7 +1559,7 @@ vector< vector<bool> > findFollowSets()
 		{
 			singRule = ruleInts[eachRule];
 			int ruleLHS = singRule[0];
-			changeCheck = firstSets[ruleLHS];
+			changeCheck = followSets[ruleLHS];
 			int singRuleSize = (int) singRule.size();
 			if (testFollow)
 			{
@@ -1567,9 +1567,9 @@ vector< vector<bool> > findFollowSets()
 				cout << "\nCurrent rule: " << eachRule + 1 << "/" << maxRules
 					 << "\n" << singRuleString(singRule) << endl;
 				cout << "Rule size: " << singRuleSize << endl;
-				cout << "FIRST set at start of loop:" << endl;
-				cout << "FIRST(" << universe[ruleLHS].lexeme << ") = { ";
-				print_set(firstSets[ruleLHS]);
+				cout << "FOLLOW set at start of loop:" << endl;
+				cout << "FOLLOW(" << universe[eachRule].lexeme << ") = { ";
+				print_set(followSets[eachRule]);
 				cout << "}" << endl;
 			}
 			vector<bool> firstB;
@@ -1700,8 +1700,8 @@ vector< vector<bool> > findFollowSets()
 					cout << "FOLLOW(changeCheck) = { ";
 					print_set(changeCheck);
 					cout << "}" << endl;
-					cout << "FOLLOW(" << universe[tokenSym].lexeme << ") = { ";
-					print_set(followSets[tokenSym]);
+					cout << "FOLLOW(" << universe[ruleLHS].lexeme << ") = { ";
+					print_set(followSets[ruleLHS]);
 					cout << "}" << endl;
 				}
 				//For every item in universeFF
@@ -1722,7 +1722,7 @@ vector< vector<bool> > findFollowSets()
 											  == is_element(changeCheck, i)) << endl;
 					}
 					 */
-					if (is_element(followSets[tokenSym], i) != is_element(changeCheck, i))
+					if (is_element(followSets[ruleLHS], i) != is_element(changeCheck, i))
 						noChanges = false;
 				}
 
@@ -1741,6 +1741,7 @@ vector< vector<bool> > findFollowSets()
 					cout << "No changes made for FIRST(" << universe[ruleLHS].lexeme
 						 << ")" << endl;
 			}
+
 		}
 		if (testFollow && !noChanges)
 			cout << "Changes made. Restarting Loop.\n" << endl;
